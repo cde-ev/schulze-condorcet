@@ -3,8 +3,6 @@ import random
 from typing import Dict, List, Optional, Tuple
 import unittest
 
-import pytz
-
 from schulze_condorcet.schulze_condorcet import schulze_evaluate
 
 
@@ -104,10 +102,10 @@ class MyTest(unittest.TestCase):
             votes.append(vote[:-1])
         times = {}
         for num in (10, 100, 1000, 2000):
-            start = datetime.datetime.now(pytz.utc)
+            start = datetime.datetime.utcnow()
             for _ in range(10):
                 schulze_evaluate(votes[:num], candidates)
-            stop = datetime.datetime.now(pytz.utc)
+            stop = datetime.datetime.utcnow()
             times[num] = stop - start
         reference = datetime.timedelta(milliseconds=5)
         for num, delta in times.items():
