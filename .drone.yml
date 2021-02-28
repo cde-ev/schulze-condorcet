@@ -6,4 +6,6 @@ steps:
 - name: test
   image: python
   commands:
+  - pip install --no-cache-dir -r requirements-dev.txt
+  - python3 -m mypy schulze_condorcet/ tests/
   - python3 -m unittest -v tests/*.py
