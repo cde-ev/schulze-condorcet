@@ -1,0 +1,16 @@
+# local backups
+*~
+*.bak
+*.autosave
+
+# py[co] files
+*.pyc
+*.pyo
+
+# cache data
+.mypy_cache/
+.coverage
+
+# ide data
+.idea
+.vscode
