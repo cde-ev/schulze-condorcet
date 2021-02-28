@@ -1,0 +1,9 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: test
+  image: python
+  commands:
+  - python3 -m unittest -v tests/*.py
