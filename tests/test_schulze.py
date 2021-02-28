@@ -110,3 +110,7 @@ class MyTest(unittest.TestCase):
         reference = datetime.timedelta(milliseconds=5)
         for num, delta in times.items():
             self.assertGreater(num * reference, delta)
+
+
+if __name__ == '__main__':
+    unittest.main()
