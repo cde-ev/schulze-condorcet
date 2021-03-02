@@ -1,4 +1,5 @@
 from gettext import gettext as _
+import itertools
 from typing import Collection, Container, Dict, List, Mapping, Tuple, Union
 
 
@@ -73,6 +74,8 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
             for y in candidates:
                 if _subindex(vote, x) < _subindex(vote, y):
                     counts[(x, y)] += 1
+        if not all(v in candidates for v in itertools.chain(*vote)):
+            raise ValueError("Superfluous candidate in vote.")
 
     # Second we calculate a numeric link strength abstracting the problem
     # into the realm of graphs with one vertex per candidate
