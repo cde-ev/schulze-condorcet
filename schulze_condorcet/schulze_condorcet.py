@@ -36,18 +36,13 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
                      ) -> Tuple[str, List[Dict[str, Union[int, List[str]]]]]:
     """Use the Schulze method to cummulate preference list into one list.
 
-    This is used by the assembly realm to tally votes -- however this is
-    pretty abstract, so we move it here.
-
     Votes have the form ``3>0>1=2>4`` where the shortnames between the
     relation signs are exactly those passed in the ``candidates`` parameter.
 
     The Schulze method is described in the pdf found in the ``related``
     folder. Also the Wikipedia article is pretty nice.
 
-    One thing to mention is, that we do not do any tie breaking. Since
-    we allow equality in the votes, it seems reasonable to allow
-    equality in the result too.
+    One thing to mention is, that we do not do any tie breaking.
 
     For a nice set of examples see the test suite.
 
@@ -71,7 +66,7 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
                 return index
         raise ValueError(_("Not in list."))
 
-    # First we count the number of votes prefering x to y
+    # First we count the number of votes preferring x to y
     counts = {(x, y): 0 for x in candidates for y in candidates}
     for vote in split_votes:
         for x in candidates:
