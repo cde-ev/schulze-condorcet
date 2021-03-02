@@ -111,6 +111,28 @@ class MyTest(unittest.TestCase):
         for num, delta in times.items():
             self.assertGreater(num * reference, delta)
 
+    def test_schulze_candidates(self) -> None:
+        # superfluous candidates in votes
+        candidates = ('0', '1', '2', '3')
+        votes = ('0=1>einstein=2=3', 'hawking>1=2>0=3')
+        try:
+            schulze_evaluate(votes, candidates)
+        except ValueError as e:
+            self.assertEqual(str(e), 'Superfluous candidate in vote.')
+        else:
+            raise RuntimeError("Expected error was not raised!")
+
+        # missing candidates in votes
+        candidates = ('einstein', 'hawking', 'bose', 'fermi')
+        votes = ('fermi=bose>einstein', 'einstein>hawking')
+        try:
+            schulze_evaluate(votes, candidates)
+        except ValueError as e:
+            self.assertEqual(str(e), 'Not in list.')
+        else:
+            raise RuntimeError("Expected error was not raised!")
+
+
 
 if __name__ == '__main__':
     unittest.main()
