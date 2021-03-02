@@ -3,7 +3,7 @@ import random
 from typing import Dict, List, Optional, Tuple
 import unittest
 
-from schulze_condorcet.schulze_condorcet import schulze_evaluate
+from schulze_condorcet import schulze_evaluate
 
 
 class MyTest(unittest.TestCase):
