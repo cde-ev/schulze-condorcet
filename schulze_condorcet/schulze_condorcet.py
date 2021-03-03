@@ -14,7 +14,7 @@ def _schulze_winners(d: Mapping[Tuple[str, str], int],
     vertex. This gives a transitive relation, which enables us thus to
     determine winners as maximal elements.
     """
-    # First determine the strongst paths
+    # First determine the strongest paths
     p = {(x, y): d[(x, y)] for x in candidates for y in candidates}
     for i in candidates:
         for j in candidates:
@@ -34,7 +34,7 @@ def _schulze_winners(d: Mapping[Tuple[str, str], int],
 
 def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
                      ) -> Tuple[str, List[Dict[str, Union[int, List[str]]]]]:
-    """Use the Schulze method to cummulate preference list into one list.
+    """Use the Schulze method to cumulate preference list into one list.
 
     Votes have the form ``3>0>1=2>4`` where the shortnames between the
     relation signs are exactly those passed in the ``candidates`` parameter.
@@ -46,12 +46,12 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
 
     For a nice set of examples see the test suite.
 
-    :param candidates: We require that the candidates be explicitly
-      passed. This allows for more flexibility (like returning a useful
-      result for zero votes).
-    :returns: The first Element is the aggregated result,
-        the second is an more extended list, containing every level
-        (descending) as dict with some extended information.
+    :param votes: The vote strings on which base we want to determine the overall
+      preference. One vote has the form ``3>0>1=2>4``.
+    :param candidates: We require that the candidates be explicitly passed. This allows
+      for more flexibility (like returning a useful result for zero votes).
+    :returns: The first Element is the aggregated result, the second is an more extended
+      list, containing every level (descending) as dict with some extended information.
     """
     split_votes = tuple(
         tuple(lvl.split('=') for lvl in vote.split('>')) for vote in votes)
@@ -105,8 +105,8 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
 
     d = {(x, y): _strength(counts[(x, y)], counts[(y, x)], len(votes))
          for x in candidates for y in candidates}
-    # Third we execute the Schulze method by iteratively determining
-    # winners
+
+    # Third we execute the Schulze method by iteratively determining winners
     result: List[List[str]] = []
     while True:
         done = {x for level in result for x in level}
@@ -117,8 +117,7 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
         winners = _schulze_winners(d, remaining)
         result.append(winners)
 
-    # Return the aggregated preference list in the same format as the input
-    # votes are.
+    # Return the aggregated preference list in the same format as the input votes are.
     condensed = ">".join("=".join(level) for level in result)
     detailed = []
     for lead, follow in zip(result, result[1:]):
