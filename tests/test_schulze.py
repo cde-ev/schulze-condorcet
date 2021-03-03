@@ -115,23 +115,16 @@ class MyTest(unittest.TestCase):
         # superfluous candidates in votes
         candidates = ('0', '1', '2', '3')
         votes = ('0=1>einstein=2=3', 'hawking>1=2>0=3')
-        try:
+        with self.assertRaises(ValueError) as cm:
             schulze_evaluate(votes, candidates)
-        except ValueError as e:
-            self.assertEqual(str(e), 'Superfluous candidate in vote string.')
-        else:
-            raise RuntimeError("Expected error was not raised!")
+            self.assertEqual(str(cm.exception), "Superfluous candidate in vote string.")
 
         # missing candidates in votes
         candidates = ('einstein', 'hawking', 'bose', 'fermi')
         votes = ('fermi=bose>einstein', 'einstein>hawking')
-        try:
+        with self.assertRaises(ValueError) as cm:
             schulze_evaluate(votes, candidates)
-        except ValueError as e:
-            self.assertEqual(str(e), 'Missing candidate in vote string.')
-        else:
-            raise RuntimeError("Expected error was not raised!")
-
+            self.assertEqual(str(cm.exception), "Missing candidate in vote string.")
 
 
 if __name__ == '__main__':
