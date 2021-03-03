@@ -59,7 +59,7 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
 
     # Check the candidates used in each vote string are exactly does given in candidates
     for vote in split_votes:
-        if not all(v in candidates for v in itertools.chain(*vote)):
+        if not all(candidate in candidates for candidate in itertools.chain(*vote)):
             raise ValueError("Superfluous candidate in vote string.")
         if not all(candidate in itertools.chain(*vote) for candidate in candidates):
             raise ValueError("Missing candidate in vote string.")
