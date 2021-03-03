@@ -1,5 +1,7 @@
 from gettext import gettext as _
-from typing import Collection, Container, Dict, List, Mapping, Tuple, Union
+from typing import Callable, Collection, Container, Dict, List, Mapping, Tuple, Union
+
+from .strength import winning_votes
 
 
 def _schulze_winners(d: Mapping[Tuple[str, str], int],
@@ -32,7 +34,9 @@ def _schulze_winners(d: Mapping[Tuple[str, str], int],
     return winners
 
 
-def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
+def schulze_evaluate(votes: Collection[str],
+                     candidates: Collection[str],
+                     strength: Callable[[int, int, int], int] = winning_votes
                      ) -> Tuple[str, List[Dict[str, Union[int, List[str]]]]]:
     """Use the Schulze method to cumulate preference list into one list.
 
@@ -50,6 +54,8 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
       preference. One vote has the form ``3>0>1=2>4``.
     :param candidates: We require that the candidates be explicitly passed. This allows
       for more flexibility (like returning a useful result for zero votes).
+    :param strength: A function which will be used as the metric on the graph of all
+      candidates. See `strength.py` for more detailed information.
     :returns: The first Element is the aggregated result, the second is an more extended
       list, containing every level (descending) as dict with some extended information.
     """
@@ -74,36 +80,9 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
                 if _subindex(vote, x) < _subindex(vote, y):
                     counts[(x, y)] += 1
 
-    # Second we calculate a numeric link strength abstracting the problem
-    # into the realm of graphs with one vertex per candidate
-    def _strength(support: int, opposition: int, totalvotes: int) -> int:
-        """One thing not specified by the Schulze method is how to asses the
-        strength of a link and indeed there are several possibilities. We
-        use the strategy called 'winning votes' as advised by the paper of
-        Markus Schulze.
-
-        If two two links have more support than opposition, then the link
-        with more supporters is stronger, if supporters tie then less
-        opposition is used as secondary criterion.
-
-        Another strategy which seems to have a more intuitive appeal is
-        called 'margin' and sets the difference between support and
-        opposition as strength of a link. However the discrepancy
-        between the strategies is rather small, to wit all cases in the
-        test suite give the same result for both of them. Moreover if
-        the votes contain no ties both strategies (and several more) are
-        totally equivalent.
-        """
-        # the margin strategy would be given by the following line
-        # return support - opposition
-        if support > opposition:
-            return totalvotes * support - opposition
-        elif support == opposition:
-            return 0
-        else:
-            return -1
-
-    d = {(x, y): _strength(counts[(x, y)], counts[(y, x)], len(votes))
+    # Second we calculate a numeric link strength abstracting the problem into the realm
+    # of graphs with one vertex per candidate
+    d = {(x, y): strength(counts[(x, y)], counts[(y, x)], len(votes))
          for x in candidates for y in candidates}
 
     # Third we execute the Schulze method by iteratively determining winners
