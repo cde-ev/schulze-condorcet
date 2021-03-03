@@ -57,6 +57,13 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
     split_votes = tuple(
         tuple(lvl.split('=') for lvl in vote.split('>')) for vote in votes)
 
+    # Check the candidates used in each vote string are exactly does given in candidates
+    for vote in split_votes:
+        if not all(v in candidates for v in itertools.chain(*vote)):
+            raise ValueError("Superfluous candidate in vote string.")
+        if not all(candidate in itertools.chain(*vote) for candidate in candidates):
+            raise ValueError("Missing candidate in vote string.")
+
     def _subindex(alist: Collection[Container[str]], element: str) -> int:
         """The element is in the list at which position in the big list.
 
@@ -74,8 +81,6 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
             for y in candidates:
                 if _subindex(vote, x) < _subindex(vote, y):
                     counts[(x, y)] += 1
-        if not all(v in candidates for v in itertools.chain(*vote)):
-            raise ValueError("Superfluous candidate in vote.")
 
     # Second we calculate a numeric link strength abstracting the problem
     # into the realm of graphs with one vertex per candidate

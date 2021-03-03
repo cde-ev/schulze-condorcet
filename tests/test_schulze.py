@@ -118,7 +118,7 @@ class MyTest(unittest.TestCase):
         try:
             schulze_evaluate(votes, candidates)
         except ValueError as e:
-            self.assertEqual(str(e), 'Superfluous candidate in vote.')
+            self.assertEqual(str(e), 'Superfluous candidate in vote string.')
         else:
             raise RuntimeError("Expected error was not raised!")
 
@@ -128,7 +128,7 @@ class MyTest(unittest.TestCase):
         try:
             schulze_evaluate(votes, candidates)
         except ValueError as e:
-            self.assertEqual(str(e), 'Not in list.')
+            self.assertEqual(str(e), 'Missing candidate in vote string.')
         else:
             raise RuntimeError("Expected error was not raised!")
 
