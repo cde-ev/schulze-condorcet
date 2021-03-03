@@ -15,10 +15,11 @@ strength function, together with an abstract function which can be used as a blu
 to implement your own strength function.
 """
 
+from typing import Protocol
 
-def strength_example(support: int, opposition: int, totalvotes: int) -> int:
-    """A generic example of a strength function."""
-    raise NotImplementedError
+
+class StrengthCallback(Protocol):
+    def __call__(self, support: int, opposition: int, totalvotes: int) -> int: ...
 
 
 def winning_votes(support: int, opposition: int, totalvotes: int) -> int:

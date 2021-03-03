@@ -1,7 +1,7 @@
 from gettext import gettext as _
 from typing import Callable, Collection, Container, Dict, List, Mapping, Tuple, Union
 
-from .strength import winning_votes
+from .strength import StrengthCallback, winning_votes
 
 
 def _schulze_winners(d: Mapping[Tuple[str, str], int],
@@ -36,7 +36,7 @@ def _schulze_winners(d: Mapping[Tuple[str, str], int],
 
 def schulze_evaluate(votes: Collection[str],
                      candidates: Collection[str],
-                     strength: Callable[[int, int, int], int] = winning_votes
+                     strength: StrengthCallback = winning_votes
                      ) -> Tuple[str, List[Dict[str, Union[int, List[str]]]]]:
     """Use the Schulze method to cumulate preference list into one list.
 
