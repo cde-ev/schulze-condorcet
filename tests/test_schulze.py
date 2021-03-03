@@ -117,14 +117,14 @@ class MyTest(unittest.TestCase):
         votes = ('0=1>einstein=2=3', 'hawking>1=2>0=3')
         with self.assertRaises(ValueError) as cm:
             schulze_evaluate(votes, candidates)
-            self.assertEqual(str(cm.exception), "Superfluous candidate in vote string.")
+        self.assertEqual(str(cm.exception), "Superfluous candidate in vote string.")
 
         # missing candidates in votes
         candidates = ('einstein', 'hawking', 'bose', 'fermi')
         votes = ('fermi=bose>einstein', 'einstein>hawking')
         with self.assertRaises(ValueError) as cm:
             schulze_evaluate(votes, candidates)
-            self.assertEqual(str(cm.exception), "Missing candidate in vote string.")
+        self.assertEqual(str(cm.exception), "Missing candidate in vote string.")
 
 
 if __name__ == '__main__':
