@@ -1,4 +1,4 @@
-""" Example implementations to define the strength of a link in the Schulze problem.
+"""Example implementations to define the strength of a link in the Schulze problem.
 
 We view the candidates as vertices of a graph and determining the result as the
 strongest path in the graph. To determine the strength of a path, we have to define a
@@ -19,6 +19,7 @@ from typing import Protocol
 
 
 class StrengthCallback(Protocol):
+    """The interface every strength function has to implement."""
     def __call__(self, support: int, opposition: int, totalvotes: int) -> int: ...
 
 
@@ -38,7 +39,7 @@ def winning_votes(support: int, opposition: int, totalvotes: int) -> int:
 
 
 def margin(support: int, opposition: int, totalvotes: int) -> int:
-    """This strategy which seems to have a more intuitive appeal.
+    """This strategy seems to have a more intuitive appeal.
 
     It sets the difference between support and opposition as strength of a link. However
     the discrepancy between this strategy and `winning_votes` is rather small, to wit

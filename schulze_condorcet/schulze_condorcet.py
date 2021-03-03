@@ -1,5 +1,5 @@
 from gettext import gettext as _
-from typing import Callable, Collection, Container, Dict, List, Mapping, Tuple, Union
+from typing import Collection, Container, Dict, List, Mapping, Tuple, Union
 
 from .strength import StrengthCallback, winning_votes
 
