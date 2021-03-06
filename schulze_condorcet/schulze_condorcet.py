@@ -82,7 +82,9 @@ def schulze_evaluate(votes: Collection[str],
 
     # Second we calculate a numeric link strength abstracting the problem into the realm
     # of graphs with one vertex per candidate
-    d = {(x, y): strength(counts[(x, y)], counts[(y, x)], len(votes))
+    d = {(x, y): strength(support=counts[(x, y)],
+                          opposition=counts[(y, x)],
+                          totalvotes=len(votes))
          for x in candidates for y in candidates}
 
     # Third we execute the Schulze method by iteratively determining winners

@@ -20,10 +20,10 @@ from typing import Protocol
 
 class StrengthCallback(Protocol):
     """The interface every strength function has to implement."""
-    def __call__(self, support: int, opposition: int, totalvotes: int) -> int: ...
+    def __call__(self, *, support: int, opposition: int, totalvotes: int) -> int: ...
 
 
-def winning_votes(support: int, opposition: int, totalvotes: int) -> int:
+def winning_votes(*, support: int, opposition: int, totalvotes: int) -> int:
     """This strategy is also advised by the paper of Markus Schulze.
 
     If two two links have more support than opposition, then the link with more
@@ -38,7 +38,7 @@ def winning_votes(support: int, opposition: int, totalvotes: int) -> int:
         return -1
 
 
-def margin(support: int, opposition: int, totalvotes: int) -> int:
+def margin(*, support: int, opposition: int, totalvotes: int) -> int:
     """This strategy seems to have a more intuitive appeal.
 
     It sets the difference between support and opposition as strength of a link. However
