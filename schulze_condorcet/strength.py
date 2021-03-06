@@ -5,14 +5,14 @@ strongest path in the graph. To determine the strength of a path, we have to def
 metric which takes the voting of the voters into account.
 
 Therefore, we transform every vote string into a number of supports and a number of
-oppositions per path in the graph of candidates (for details, see at `schulze_evaluate`.
+oppositions per path in the graph of candidates (for details, see at `schulze_evaluate`).
 Now, we use this and the total number of votes to define the strength of a given path
 in the graph of all candidates.
 
 How to asses the strength of a path is one thing not specified by the Schulze method and
 indeed there are several possibilities. We offer some sample implementations of such a
-strength function, together with an abstract function which can be used as a blue print
-to implement your own strength function.
+strength function, together with an protocol defining the interface of a generic
+strength function . You can use it to implement your own strength function.
 """
 
 from typing import Protocol
