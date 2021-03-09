@@ -76,6 +76,7 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
         for index, sublist in enumerate(alist):
             if element in sublist:
                 return index
+        # This line can not be reached since we validate for well-formed votes above
         raise ValueError(_("Not in list."))  # pragma: no cover
 
     # First we count the number of votes preferring x to y
