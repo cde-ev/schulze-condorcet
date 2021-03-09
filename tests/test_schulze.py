@@ -128,8 +128,8 @@ class MyTest(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Missing candidate in vote string.")
 
         # duplicated candidates in votes
-        candidates = ('einstein', 'rose')
-        votes = ('einstein=rose=einstein', 'rose>einstein>rose')
+        candidates = ('einstein', 'rose', 'bose', 'fermi')
+        votes = ('einstein=rose=einstein>bose>fermi', 'rose>einstein>rose=fermi=bose')
         with self.assertRaises(ValueError) as cm:
             schulze_evaluate(votes, candidates)
         self.assertEqual(str(cm.exception),
