@@ -1,7 +1,7 @@
 from gettext import gettext as _
 from typing import Collection, Container, Dict, List, Mapping, Tuple, Union
 
-from .strength import StrengthCallback, winning_votes
+from schulze_condorcet.strength import StrengthCallback, winning_votes
 
 
 def _schulze_winners(d: Mapping[Tuple[str, str], int],
