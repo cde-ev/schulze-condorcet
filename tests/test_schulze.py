@@ -25,7 +25,8 @@ class MyTest(unittest.TestCase):
                 votes += [vote] * number
             return votes
 
-        candidates = (bar, '1', '2', '3', '4', '5')
+        candidates = ('1', '2', '3', '4', '5')
+        candidates_with_bar = (bar, ) + candidates
         tests: Tuple[Tuple[str, Dict[Optional[Tuple[str, ...]], int]], ...] = (
             ("0=1>2>3>4=5", {('1',): 3, ('2',): 2, ('3',): 1, ('4',): 0,
                              ('5',): 0, tuple(): 0, None: 0}),
@@ -38,8 +39,8 @@ class MyTest(unittest.TestCase):
         )
         for expectation, spec in tests:
             with self.subTest(spec=spec):
-                condensed, detailed = schulze_evaluate(
-                    _ordinary_votes(spec, candidates), candidates)
+                sample_votes = _ordinary_votes(spec, candidates)
+                condensed, _ = schulze_evaluate(sample_votes, candidates_with_bar)
                 self.assertEqual(expectation, condensed)
 
     def test_schulze(self) -> None:
