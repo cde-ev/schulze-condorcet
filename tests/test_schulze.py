@@ -126,6 +126,14 @@ class MyTest(unittest.TestCase):
             schulze_evaluate(votes, candidates)
         self.assertEqual(str(cm.exception), "Missing candidate in vote string.")
 
+        # duplicated candidates in votes
+        candidates = ('einstein', 'rose')
+        votes = ('einstein=rose=einstein', 'rose>einstein>rose')
+        with self.assertRaises(ValueError) as cm:
+            schulze_evaluate(votes, candidates)
+        self.assertEqual(str(cm.exception),
+                         "Every candidate must occur exactly once in each vote.")
+
 
 if __name__ == '__main__':
     unittest.main()
