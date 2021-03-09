@@ -60,12 +60,12 @@ def schulze_evaluate(votes: Collection[str], candidates: Collection[str]
     # Check the candidates used in each vote string are exactly those explicitly given
     # in candidates and occur exactly once
     for vote in split_votes:
-        flat_vote = [candidate for candidate in itertools.chain.from_iterable(vote)]
-        if not all(candidate in candidates for candidate in flat_vote):
+        vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
+        if not all(candidate in candidates for candidate in vote_candidates):
             raise ValueError("Superfluous candidate in vote string.")
-        if not all(candidate in flat_vote for candidate in candidates):
+        if not all(candidate in vote_candidates for candidate in candidates):
             raise ValueError("Missing candidate in vote string.")
-        if not len(flat_vote) == len(candidates):
+        if not len(vote_candidates) == len(candidates):
             raise ValueError("Every candidate must occur exactly once in each vote.")
 
     def _subindex(alist: Collection[Container[str]], element: str) -> int:
