@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import unittest
 
 from schulze_condorcet import schulze_evaluate
+from schulze_condorcet.strength import margin, winning_votes
 
 
 class MyTest(unittest.TestCase):
@@ -36,11 +37,12 @@ class MyTest(unittest.TestCase):
             ("1=2=3>0>4=5", {('1', '2', '3'): 2, ('1', '2',): 3, ('3',): 3,
                              ('1', '3'): 1, ('2',): 1}),
         )
-        for expectation, spec in tests:
-            with self.subTest(spec=spec):
-                condensed, detailed = schulze_evaluate(
-                    _ordinary_votes(spec, candidates), candidates)
-                self.assertEqual(expectation, condensed)
+        for metric in {margin, winning_votes}:
+            for expectation, spec in tests:
+                with self.subTest(spec=spec, metric=metric):
+                    condensed, _ = schulze_evaluate(_ordinary_votes(spec, candidates),
+                                                    candidates, strength=metric)
+                    self.assertEqual(expectation, condensed)
 
     def test_schulze(self) -> None:
         candidates = ('0', '1', '2', '3', '4')
@@ -82,10 +84,12 @@ class MyTest(unittest.TestCase):
             ("0=3=4>2>1", advanced + ("0=2=3=4>1",)),
             ("1=3=4>2>0", advanced + ("1=2=3=4>0",)),
         )
-        for expectation, addons in tests:
-            with self.subTest(addons=addons):
-                condensed, detailed = schulze_evaluate(base + addons, candidates)
-                self.assertEqual(expectation, condensed)
+        for metric in {margin, winning_votes}:
+            for expectation, addons in tests:
+                with self.subTest(addons=addons, metric=metric):
+                    condensed, _ = schulze_evaluate(base + addons, candidates,
+                                                    strength=metric)
+                    self.assertEqual(expectation, condensed)
 
     def test_schulze_runtime(self) -> None:
         # silly test, since I just realized, that the algorithm runtime is
