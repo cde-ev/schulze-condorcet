@@ -67,11 +67,12 @@ def schulze_evaluate(votes: Collection[str],
     # in candidates and occur exactly once
     for vote in split_votes:
         vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
-        if not all(candidate in candidates for candidate in vote_candidates):
+        vote_candidates_set = set(vote_candidates)
+        if not all(candidate in candidates for candidate in vote_candidates_set):
             raise ValueError("Superfluous candidate in vote string.")
-        if not all(candidate in vote_candidates for candidate in candidates):
+        if not all(candidate in vote_candidates_set for candidate in candidates):
             raise ValueError("Missing candidate in vote string.")
-        if not len(vote_candidates) == len(candidates):
+        if not len(vote_candidates) == len(vote_candidates_set):
             raise ValueError("Every candidate must occur exactly once in each vote.")
 
     def _subindex(alist: Collection[Container[str]], element: str) -> int:
