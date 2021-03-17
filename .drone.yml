@@ -1,6 +1,20 @@
+---
 kind: pipeline
 type: docker
-name: default
+name: python-minimal
+
+steps:
+- name: test
+  image: python:3.8
+  commands:
+  - pip install --no-cache-dir -r requirements-dev.txt
+  - python3 -m mypy schulze_condorcet/ tests/
+  - python3 -m unittest -v tests/*.py
+
+---
+kind: pipeline
+type: docker
+name: python-recent
 
 steps:
 - name: test
