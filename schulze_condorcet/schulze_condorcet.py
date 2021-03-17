@@ -65,13 +65,15 @@ def schulze_evaluate(votes: Collection[str],
 
     # Check the candidates used in each vote string are exactly those explicitly given
     # in candidates and occur exactly once
+    candidates_set = set(candidates)
     for vote in split_votes:
         vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
         vote_candidates_set = set(vote_candidates)
-        if not all(candidate in candidates for candidate in vote_candidates_set):
-            raise ValueError("Superfluous candidate in vote string.")
-        if not all(candidate in vote_candidates_set for candidate in candidates):
-            raise ValueError("Missing candidate in vote string.")
+        if candidates_set != vote_candidates_set:
+            if candidates_set < vote_candidates_set:
+                raise ValueError("Superfluous candidate in vote string.")
+            else:
+                raise ValueError("Missing candidate in vote string.")
         if not len(vote_candidates) == len(vote_candidates_set):
             raise ValueError("Every candidate must occur exactly once in each vote.")
 
