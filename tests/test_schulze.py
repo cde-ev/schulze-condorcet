@@ -1,6 +1,6 @@
 import datetime
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Collection, Dict, List, Optional, Tuple
 import unittest
 
 from schulze_condorcet import schulze_evaluate
@@ -95,25 +95,29 @@ class MyTest(unittest.TestCase):
         # silly test, since I just realized, that the algorithm runtime is
         # linear in the number of votes, but a bit more scary in the number
         # of candidates
-        candidates = ('0', '1', '2', '3', '4')
-        votes = []
-        for _ in range(2000):
-            parts = list(candidates)
-            random.shuffle(parts)
-            relations = (random.choice(('=', '>'))
-                         for _ in range(len(candidates)))
-            vote = ''.join(c + r for c, r in zip(candidates, relations))
-            votes.append(vote[:-1])
-        times = {}
-        for num in (10, 100, 1000, 2000):
-            start = datetime.datetime.utcnow()
-            for _ in range(10):
-                schulze_evaluate(votes[:num], candidates)
-            stop = datetime.datetime.utcnow()
-            times[num] = stop - start
-        reference = datetime.timedelta(milliseconds=5)
-        for num, delta in times.items():
-            self.assertGreater(num * reference, delta)
+        num_evaluation_runs = 3
+        reference = datetime.timedelta(microseconds=2)
+
+        def create_random_votes(candidates: Collection[str], n: int) -> List[str]:
+            return [''.join(c + random.choice(("=", ">")) for c in random.sample(candidates, len(candidates)))[:-1]
+                    for _ in range(n)]
+
+        for num_candidates in (3, 5, 10, 20):
+            candidates = tuple(map(str, range(num_candidates)))
+            for num_votes in (100, 1000, 2000):
+                votes = create_random_votes(candidates, num_votes)
+                # Evaluation time depends linearly on number of votes and quadratically on number of candidates.
+                time_limit = num_votes * num_candidates ** 2 * reference * num_evaluation_runs
+                for metric in (margin, winning_votes):
+                    with self.subTest(c=num_candidates, v=num_votes, m=metric.__name__):
+                        runtimes = []
+                        for _ in range(num_evaluation_runs):
+                            start = datetime.datetime.utcnow()
+                            schulze_evaluate(votes, candidates, metric)
+                            runtimes.append(datetime.datetime.utcnow() - start)
+                        total_runtime = sum(runtimes, datetime.timedelta())
+                        self.assertLess(total_runtime, time_limit)
+                        self.assertGreater(10 * total_runtime, time_limit)
 
 
 if __name__ == '__main__':
