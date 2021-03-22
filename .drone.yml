@@ -4,11 +4,14 @@ type: docker
 name: python-minimal
 
 steps:
-- name: test
+- name: mypy
   image: python:3.8
   commands:
   - pip install --no-cache-dir -r requirements-dev.txt
   - python3 -m mypy schulze_condorcet/ tests/
+- name: test
+  image: python:3.8
+  commands:
   - python3 -m unittest -v tests/*.py
 
 ---
@@ -17,9 +20,12 @@ type: docker
 name: python-recent
 
 steps:
-- name: test
+- name: mypy
   image: python
   commands:
   - pip install --no-cache-dir -r requirements-dev.txt
   - python3 -m mypy schulze_condorcet/ tests/
+- name: test
+  image: python
+  commands:
   - python3 -m unittest -v tests/*.py
