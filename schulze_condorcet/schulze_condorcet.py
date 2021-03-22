@@ -74,6 +74,9 @@ def schulze_evaluate(votes: Collection[str],
 
     # First we count the number of votes preferring x to y
     counts = {(x, y): 0 for x in candidates for y in candidates}
+    # can we write this as list comprehension?
+    # I do not think so, since we would need to access the object we currently create
+    # counts = {(x, y): counts[(x, y)] + 1 for x in candidates for y in candidates for vote in split_votes if _subindex(vote, x) < _subindex(vote, y)}
     for vote in split_votes:
         for x in candidates:
             for y in candidates:

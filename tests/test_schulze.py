@@ -6,6 +6,8 @@ import unittest
 from schulze_condorcet import schulze_evaluate
 from schulze_condorcet.strength import margin, winning_votes
 
+import profile
+
 
 class MyTest(unittest.TestCase):
     def test_schulze_ordinary(self) -> None:
@@ -104,16 +106,12 @@ class MyTest(unittest.TestCase):
                          for _ in range(len(candidates)))
             vote = ''.join(c + r for c, r in zip(candidates, relations))
             votes.append(vote[:-1])
-        times = {}
         for num in (10, 100, 1000, 2000):
-            start = datetime.datetime.utcnow()
             for _ in range(10):
                 schulze_evaluate(votes[:num], candidates)
-            stop = datetime.datetime.utcnow()
-            times[num] = stop - start
-        reference = datetime.timedelta(milliseconds=5)
-        for num, delta in times.items():
-            self.assertGreater(num * reference, delta)
+
+    def test_profiling(self) -> None:
+        profile.runctx('tester = MyTest(); tester.test_schulze_runtime()', globals(), {})
 
 
 if __name__ == '__main__':
