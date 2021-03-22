@@ -1,6 +1,6 @@
 import datetime
 import random
-from typing import Collection, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 import unittest
 
 from schulze_condorcet import schulze_evaluate
@@ -98,7 +98,7 @@ class MyTest(unittest.TestCase):
         num_evaluation_runs = 3
         reference = datetime.timedelta(microseconds=2)
 
-        def create_random_votes(candidates: Collection[str], n: int) -> List[str]:
+        def create_random_votes(candidates: Sequence[str], n: int) -> List[str]:
             return [''.join(c + random.choice(("=", ">")) for c in random.sample(candidates, len(candidates)))[:-1]
                     for _ in range(n)]
 
