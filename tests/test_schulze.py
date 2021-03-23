@@ -26,7 +26,8 @@ class MyTest(unittest.TestCase):
                 votes += [vote] * number
             return votes
 
-        candidates = (bar, '1', '2', '3', '4', '5')
+        candidates = ('1', '2', '3', '4', '5')
+        candidates_with_bar = (bar, ) + candidates
         tests: Tuple[Tuple[str, Dict[Optional[Tuple[str, ...]], int]], ...] = (
             ("0=1>2>3>4=5", {('1',): 3, ('2',): 2, ('3',): 1, ('4',): 0,
                              ('5',): 0, tuple(): 0, None: 0}),
@@ -41,7 +42,7 @@ class MyTest(unittest.TestCase):
             for expectation, spec in tests:
                 with self.subTest(spec=spec, metric=metric):
                     condensed, _ = schulze_evaluate(_ordinary_votes(spec, candidates),
-                                                    candidates, strength=metric)
+                                                    candidates_with_bar, strength=metric)
                     self.assertEqual(expectation, condensed)
 
     def test_schulze(self) -> None:
@@ -118,6 +119,29 @@ class MyTest(unittest.TestCase):
                         total_runtime = sum(runtimes, datetime.timedelta())
                         self.assertLess(total_runtime, time_limit)
                         self.assertGreater(10 * total_runtime, time_limit)
+
+    def test_schulze_candidates(self) -> None:
+        # superfluous candidates in votes
+        candidates = ('0', '1', '2', '3')
+        votes = ('0=1>einstein=2=3', 'hawking>1=2>0=3')
+        with self.assertRaises(ValueError) as cm:
+            schulze_evaluate(votes, candidates)
+        self.assertEqual(str(cm.exception), "Superfluous candidate in vote string.")
+
+        # missing candidates in votes
+        candidates = ('einstein', 'hawking', 'bose', 'fermi')
+        votes = ('fermi=bose>einstein', 'einstein>hawking')
+        with self.assertRaises(ValueError) as cm:
+            schulze_evaluate(votes, candidates)
+        self.assertEqual(str(cm.exception), "Missing candidate in vote string.")
+
+        # duplicated candidates in votes
+        candidates = ('einstein', 'rose', 'bose', 'fermi')
+        votes = ('einstein=rose=einstein>bose>fermi', 'rose>einstein>rose=fermi=bose')
+        with self.assertRaises(ValueError) as cm:
+            schulze_evaluate(votes, candidates)
+        self.assertEqual(str(cm.exception),
+                         "Every candidate must occur exactly once in each vote.")
 
 
 if __name__ == '__main__':
