@@ -1,4 +1,5 @@
 from gettext import gettext as _
+import itertools
 from typing import Collection, Container, Dict, List, Mapping, Tuple, Union
 
 from schulze_condorcet.strength import StrengthCallback, winning_votes
@@ -62,6 +63,20 @@ def schulze_evaluate(votes: Collection[str],
     split_votes = tuple(
         tuple(lvl.split('=') for lvl in vote.split('>')) for vote in votes)
 
+    # Check the candidates used in each vote string are exactly those explicitly given
+    # in candidates and occur exactly once
+    candidates_set = set(candidates)
+    for vote in split_votes:
+        vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
+        vote_candidates_set = set(vote_candidates)
+        if candidates_set != vote_candidates_set:
+            if candidates_set < vote_candidates_set:
+                raise ValueError("Superfluous candidate in vote string.")
+            else:
+                raise ValueError("Missing candidate in vote string.")
+        if not len(vote_candidates) == len(vote_candidates_set):
+            raise ValueError("Every candidate must occur exactly once in each vote.")
+
     def _subindex(alist: Collection[Container[str]], element: str) -> int:
         """The element is in the list at which position in the big list.
 
@@ -70,7 +85,8 @@ def schulze_evaluate(votes: Collection[str],
         for index, sublist in enumerate(alist):
             if element in sublist:
                 return index
-        raise ValueError(_("Not in list."))
+        # This line can not be reached since we validate for well-formed votes above
+        raise ValueError(_("Not in list."))  # pragma: no cover
 
     # First we count the number of votes preferring x to y
     counts = {(x, y): 0 for x in candidates for y in candidates}
