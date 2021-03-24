@@ -162,6 +162,31 @@ class MyTest(unittest.TestCase):
         self.assertEqual(str(cm.exception),
                          "Every candidate must occur exactly once in each vote.")
 
+    def test_result_order(self) -> None:
+        c0 = Candidate("0")
+        c1 = Candidate("1")
+        c2 = Candidate("2")
+
+        candidates = (c0, c1, c2)
+        reference_votes = [Vote("0=1>2"), Vote("0=1=2")]
+        reference_condensed, _ = schulze_evaluate(reference_votes, candidates)
+        self.assertEqual("0=1>2", reference_condensed)
+
+        # result is identical under arbitrary order of incoming votes
+        votes = [Vote("0=1=2"), Vote("0=1>2")]
+        condensed, _ = schulze_evaluate(votes, candidates)
+        self.assertEqual(reference_condensed, condensed)
+
+        # result is identical under arbitrary sorting of equal candidates in each vote
+        votes = [Vote("1=0>2"), Vote("1=2=0")]
+        condensed, _ = schulze_evaluate(votes, candidates)
+        self.assertEqual(reference_condensed, condensed)
+
+        # result is stable but not identical under different sorting of candidates
+        candidates = (c1, c0, c2)
+        condensed, _ = schulze_evaluate(reference_votes, candidates)
+        self.assertEqual("1=0>2", condensed)
+
 
 if __name__ == '__main__':
     unittest.main()
