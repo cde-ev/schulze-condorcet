@@ -1,3 +1,3 @@
-from .schulze_condorcet import schulze_evaluate
+from .schulze_condorcet import schulze_evaluate, Candidate, Vote
 
-__all__ = ['schulze_evaluate']
+__all__ = ['schulze_evaluate', 'Candidate', 'Vote']
