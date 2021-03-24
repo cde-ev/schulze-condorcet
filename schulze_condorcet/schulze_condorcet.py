@@ -40,7 +40,7 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
 
 
 def schulze_evaluate(votes: Collection[Vote],
-                     candidates: Collection[Candidate],
+                     candidates: Tuple[Candidate, ...],
                      strength: StrengthCallback = winning_votes
                      ) -> Tuple[Vote, List[Dict[str, Union[int, List[Candidate]]]]]:
     """Use the Schulze method to cumulate preference list into one list.
@@ -54,6 +54,16 @@ def schulze_evaluate(votes: Collection[Vote],
     One thing to mention is, that we do not do any tie breaking.
 
     For a nice set of examples see the test suite.
+
+    Note that the candidates should already be sorted meaningful. The return of this
+    function is stable under arbitrary sorting of the candidates, but only identical
+    if the candidates are passed in the same order. This roots in the fact that the
+    result ``1=2>0`` and ``2=1>0`` carry the same meaning but are not identical.
+    Therefore, we determine the order of candidates equal to each other in the final
+    result by the order of those in the explicitly passed in candidates.
+
+    The return of this function is identical under arbitrary sorting of the votes passed
+    in. Moreover, the order of equal candidates in the passed in votes does not matter.
 
     :param votes: The vote strings on which base we want to determine the overall
       preference. One vote has the form ``3>0>1=2>4``.
