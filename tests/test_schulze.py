@@ -17,12 +17,12 @@ class MyTest(unittest.TestCase):
         c5 = Candidate('5')
 
         def _ordinary_votes(spec: Dict[Optional[Tuple[Candidate, ...]], int],
-                            candidates: List[Candidate]) -> List[Vote]:
+                            candidates: Tuple[Candidate, ...]) -> List[Vote]:
             votes = []
             for winners, number in spec.items():
                 if winners is None:
                     # abstention
-                    vote = '='.join(candidates + [bar])
+                    vote = '='.join(candidates + (bar,))
                 elif not winners:
                     vote = bar + '>' + '='.join(candidates)
                 else:
@@ -31,8 +31,8 @@ class MyTest(unittest.TestCase):
                 votes += [vote] * number
             return [Vote(v) for v in votes]
 
-        candidates = [c1, c2, c3, c4, c5]
-        candidates_with_bar = [bar] + candidates
+        candidates = (c1, c2, c3, c4, c5)
+        candidates_with_bar = (bar,) + candidates
         tests: Tuple[Tuple[Vote, Dict[Optional[Tuple[Candidate, ...]], int]], ...] = (
             (Vote("0=1>2>3>4=5"), {(c1,): 3, (c2,): 2, (c3,): 1, (c4,): 0, (c5,): 0, tuple(): 0, None: 0}),
             (Vote("0>1>5>3>4>2"), {(c1,): 9, (c2,): 0, (c3,): 2, (c4,): 1, (c5,): 8, tuple(): 1, None: 5}),
