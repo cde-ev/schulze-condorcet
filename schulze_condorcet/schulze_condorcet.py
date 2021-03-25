@@ -1,6 +1,8 @@
-from gettext import gettext as _
 import itertools
-from typing import Collection, Container, List, Mapping, NewType, Tuple, TypedDict
+from gettext import gettext as _
+from typing import (
+    Collection, Container, List, Mapping, NewType, Tuple, TypedDict, Sequence
+)
 
 from schulze_condorcet.strength import StrengthCallback, winning_votes
 
@@ -47,7 +49,7 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
 
 
 def schulze_evaluate(votes: Collection[Vote],
-                     candidates: Tuple[Candidate, ...],
+                     candidates: Sequence[Candidate],
                      strength: StrengthCallback = winning_votes
                      ) -> Tuple[Vote, List[DetailedResultLevel]]:
     """Use the Schulze method to cumulate preference list into one list.
