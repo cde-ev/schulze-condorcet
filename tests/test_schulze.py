@@ -8,11 +8,11 @@ from schulze_condorcet.strength import margin, winning_votes
 
 
 class MyTest(unittest.TestCase):
-    def test_schulze_ordinary(self) -> None:
+    def test_classical_voting(self) -> None:
         bar = '0'
 
-        def _ordinary_votes(spec: Dict[Optional[Tuple[str, ...]], int],
-                            candidates: Tuple[str, ...]) -> List[str]:
+        def _classical_votes(spec: Dict[Optional[Tuple[str, ...]], int],
+                             candidates: Tuple[str, ...]) -> List[str]:
             votes = []
             for winners, number in spec.items():
                 if winners is None:
@@ -41,11 +41,11 @@ class MyTest(unittest.TestCase):
         for metric in {margin, winning_votes}:
             for expectation, spec in tests:
                 with self.subTest(spec=spec, metric=metric):
-                    condensed, _ = schulze_evaluate(_ordinary_votes(spec, candidates),
+                    condensed, _ = schulze_evaluate(_classical_votes(spec, candidates),
                                                     candidates_with_bar, strength=metric)
                     self.assertEqual(expectation, condensed)
 
-    def test_schulze(self) -> None:
+    def test_preferential_voting(self) -> None:
         candidates = ('0', '1', '2', '3', '4')
         # this base set is designed to have a nearly homogeneous
         # distribution (meaning all things are preferred by at most one
@@ -92,7 +92,7 @@ class MyTest(unittest.TestCase):
                                                     strength=metric)
                     self.assertEqual(expectation, condensed)
 
-    def test_schulze_runtime(self) -> None:
+    def test_runtime(self) -> None:
         # silly test, since I just realized, that the algorithm runtime is
         # linear in the number of votes, but a bit more scary in the number
         # of candidates
@@ -116,7 +116,7 @@ class MyTest(unittest.TestCase):
         for num, delta in times.items():
             self.assertGreater(num * reference, delta)
 
-    def test_schulze_candidates(self) -> None:
+    def test_candidates_consistency(self) -> None:
         # superfluous candidates in votes
         candidates = ('0', '1', '2', '3')
         votes = ('0=1>einstein=2=3', 'hawking>1=2>0=3')
