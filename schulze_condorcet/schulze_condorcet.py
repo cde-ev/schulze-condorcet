@@ -1,12 +1,19 @@
 from gettext import gettext as _
 import itertools
-from typing import Collection, Container, Dict, List, Mapping, NewType, Tuple, Union
+from typing import Collection, Container, List, Mapping, NewType, Tuple, TypedDict
 
 from schulze_condorcet.strength import StrengthCallback, winning_votes
 
 
 Vote = NewType('Vote', str)
 Candidate = NewType('Candidate', str)
+
+
+class DetailedResultLevel(TypedDict):
+    winner: List[Candidate]
+    loser: List[Candidate]
+    support: int
+    opposition: int
 
 
 def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
@@ -42,7 +49,7 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
 def schulze_evaluate(votes: Collection[Vote],
                      candidates: Tuple[Candidate, ...],
                      strength: StrengthCallback = winning_votes
-                     ) -> Tuple[Vote, List[Dict[str, Union[int, List[Candidate]]]]]:
+                     ) -> Tuple[Vote, List[DetailedResultLevel]]:
     """Use the Schulze method to cumulate preference list into one list.
 
     Votes have the form ``3>0>1=2>4`` where the shortnames between the
@@ -131,12 +138,12 @@ def schulze_evaluate(votes: Collection[Vote],
     # Return the aggregated preference list in the same format as the input votes are.
     condensed = Vote(">".join("=".join(level) for level in result))
     detailed = []
-    for lead, follow in zip(result, result[1:]):
-        level: Dict[str, Union[List[Candidate], int]] = {
-            'winner': lead,
-            'loser': follow,
-            'support': counts[(lead[0], follow[0])],
-            'opposition': counts[(follow[0], lead[0])]
+    for winner, loser in zip(result, result[1:]):
+        level: DetailedResultLevel = {
+            'winner': winner,
+            'loser': loser,
+            'support': counts[(winner[0], loser[0])],
+            'opposition': counts[(loser[0], winner[0])]
         }
         detailed.append(level)
 
