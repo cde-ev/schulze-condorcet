@@ -135,8 +135,8 @@ def schulze_evaluate(votes: Collection[Vote],
         level: Dict[str, Union[List[Candidate], int]] = {
             'winner': lead,
             'loser': follow,
-            'pro_votes': counts[(lead[0], follow[0])],
-            'contra_votes': counts[(follow[0], lead[0])]
+            'support': counts[(lead[0], follow[0])],
+            'opposition': counts[(follow[0], lead[0])]
         }
         detailed.append(level)
 
