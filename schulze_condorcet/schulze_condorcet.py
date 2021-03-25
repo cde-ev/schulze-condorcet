@@ -92,11 +92,11 @@ def schulze_evaluate(votes: Collection[Vote],
         vote_candidates_set = set(vote_candidates)
         if candidates_set != vote_candidates_set:
             if candidates_set < vote_candidates_set:
-                raise ValueError("Superfluous candidate in vote string.")
+                raise ValueError(_("Superfluous candidate in vote string."))
             else:
-                raise ValueError("Missing candidate in vote string.")
+                raise ValueError(_("Missing candidate in vote string."))
         if not len(vote_candidates) == len(vote_candidates_set):
-            raise ValueError("Every candidate must occur exactly once in each vote.")
+            raise ValueError(_("Every candidate must occur exactly once in each vote."))
 
     def _subindex(alist: Collection[Container[str]], element: str) -> int:
         """The element is in the list at which position in the big list.
