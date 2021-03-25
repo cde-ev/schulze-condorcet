@@ -12,8 +12,8 @@ Candidate = NewType('Candidate', str)
 
 
 class DetailedResultLevel(TypedDict):
-    winner: List[Candidate]
-    loser: List[Candidate]
+    preferred: List[Candidate]
+    rejected: List[Candidate]
     support: int
     opposition: int
 
@@ -140,12 +140,12 @@ def schulze_evaluate(votes: Collection[Vote],
     # Return the aggregated preference list in the same format as the input votes are.
     condensed = Vote(">".join("=".join(level) for level in result))
     detailed = []
-    for winner, loser in zip(result, result[1:]):
+    for preferred, rejected in zip(result, result[1:]):
         level: DetailedResultLevel = {
-            'winner': winner,
-            'loser': loser,
-            'support': counts[(winner[0], loser[0])],
-            'opposition': counts[(loser[0], winner[0])]
+            'preferred': preferred,
+            'rejected': rejected,
+            'support': counts[(rejected[0], rejected[0])],
+            'opposition': counts[(rejected[0], preferred[0])]
         }
         detailed.append(level)
 
