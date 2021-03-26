@@ -19,7 +19,7 @@ class DetailedResultLevel(TypedDict):
 
 
 def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
-                     candidates: Collection[Candidate]) -> List[Candidate]:
+                     candidates: Sequence[Candidate]) -> List[Candidate]:
     """This is the abstract part of the Schulze method doing the actual work.
 
     The candidates are the vertices of a graph and the metric (in form
