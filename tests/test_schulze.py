@@ -1,10 +1,17 @@
 import datetime
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TypedDict
 import unittest
 
 from schulze_condorcet import schulze_evaluate, Candidate, Vote
+from schulze_condorcet.schulze_condorcet import DetailedResultLevel as DRL
 from schulze_condorcet.strength import margin, winning_votes
+
+
+class ClassicalTestCase(TypedDict):
+    input: Dict[Optional[Tuple[Candidate, ...]], int]
+    condensed: Vote
+    detailed: List[DRL]
 
 
 class MyTest(unittest.TestCase):
@@ -33,18 +40,53 @@ class MyTest(unittest.TestCase):
 
         candidates = (c1, c2, c3, c4, c5)
         candidates_with_bar = (bar,) + candidates
-        tests: Tuple[Tuple[Vote, Dict[Optional[Tuple[Candidate, ...]], int]], ...] = (
-            (Vote("0=1>2>3>4=5"), {(c1,): 3, (c2,): 2, (c3,): 1, (c4,): 0, (c5,): 0, tuple(): 0, None: 0}),
-            (Vote("0>1>5>3>4>2"), {(c1,): 9, (c2,): 0, (c3,): 2, (c4,): 1, (c5,): 8, tuple(): 1, None: 5}),
-            (Vote("0>1>2=5>3=4"), {(c1,): 9, (c2,): 8, (c3,): 2, (c4,): 2, (c5,): 8, tuple(): 5, None: 5}),
-            (Vote("1=2=3>0>4=5"), {(c1, c2, c3): 2, (c1, c2): 3, (c3,): 3, (c1, c3): 1, (c2,): 1}),
-        )
+
+        test_1: ClassicalTestCase = {
+            'input': {(c1,): 3, (c2,): 2, (c3,): 1, (c4,): 0, (c5,): 0, tuple(): 0, None: 0},
+            'condensed': Vote("0=1>2>3>4=5"),
+            'detailed': [
+                DRL(preferred=[bar, c1], rejected=[c2], support=4, opposition=2),
+                DRL(preferred=[c2], rejected=[c3], support=2, opposition=1),
+                DRL(preferred=[c3], rejected=[c4, c5], support=1, opposition=0)
+            ]
+        }
+        test_2: ClassicalTestCase = {
+            'input': {(c1,): 9, (c2,): 0, (c3,): 2, (c4,): 1, (c5,): 8, tuple(): 1, None: 5},
+            'condensed': Vote("0>1>5>3>4>2"),
+            'detailed': [
+                DRL(preferred=[bar], rejected=[c1], support=12, opposition=9),
+                DRL(preferred=[c1], rejected=[c5], support=9, opposition=8),
+                DRL(preferred=[c5], rejected=[c3], support=8, opposition=2),
+                DRL(preferred=[c3], rejected=[c4], support=2, opposition=1),
+                DRL(preferred=[c4], rejected=[c2], support=1, opposition=0)
+            ]
+        }
+        test_3: ClassicalTestCase = {
+            'input': {(c1,): 9, (c2,): 8, (c3,): 2, (c4,): 2, (c5,): 8, tuple(): 5, None: 5},
+            'condensed': Vote("0>1>2=5>3=4"),
+            'detailed': [
+                DRL(preferred=[bar], rejected=[c1], support=25, opposition=9),
+                DRL(preferred=[c1], rejected=[c2, c5], support=9, opposition=8),
+                DRL(preferred=[c2, c5], rejected=[c3, c4], support=8, opposition=2)
+            ]
+        }
+        test_4: ClassicalTestCase = {
+            'input': {(c1, c2, c3): 2, (c1, c2): 3, (c3,): 3, (c1, c3): 1, (c2,): 1},
+            'condensed': Vote("1=2=3>0>4=5"),
+            'detailed': [
+                DRL(preferred=[c1, c2, c3], rejected=[bar], support=6, opposition=4),
+                DRL(preferred=[bar], rejected=[c4, c5], support=10, opposition=0)
+            ]
+        }
+
         for metric in {margin, winning_votes}:
-            for expectation, spec in tests:
-                with self.subTest(spec=spec, metric=metric):
-                    condensed, _ = schulze_evaluate(_classical_votes(spec, candidates),
-                                                    candidates_with_bar, strength=metric)
-                    self.assertEqual(expectation, condensed)
+            for test in [test_1, test_2, test_3, test_4]:
+                with self.subTest(test=test, metric=metric):
+                    condensed, detailed = schulze_evaluate(
+                        _classical_votes(test['input'], candidates),
+                        candidates_with_bar, strength=metric)
+                    self.assertEqual(test['condensed'], condensed)
+                    self.assertEqual(test['detailed'], detailed)
 
     def test_preferential_voting(self) -> None:
         bar = Candidate('0')
