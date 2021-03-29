@@ -144,7 +144,7 @@ def schulze_evaluate(votes: Collection[Vote],
         level: DetailedResultLevel = {
             'preferred': preferred,
             'rejected': rejected,
-            'support': counts[(rejected[0], rejected[0])],
+            'support': counts[(preferred[0], rejected[0])],
             'opposition': counts[(rejected[0], preferred[0])]
         }
         detailed.append(level)
