@@ -1,12 +1,25 @@
-from gettext import gettext as _
 import itertools
-from typing import Collection, Container, Dict, List, Mapping, Tuple, Union
+from gettext import gettext as _
+from typing import (
+    Collection, Container, List, Mapping, NewType, Tuple, TypedDict, Sequence
+)
 
 from schulze_condorcet.strength import StrengthCallback, winning_votes
 
 
-def _schulze_winners(d: Mapping[Tuple[str, str], int],
-                     candidates: Collection[str]) -> List[str]:
+Vote = NewType('Vote', str)
+Candidate = NewType('Candidate', str)
+
+
+class DetailedResultLevel(TypedDict):
+    preferred: List[Candidate]
+    rejected: List[Candidate]
+    support: int
+    opposition: int
+
+
+def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
+                     candidates: Sequence[Candidate]) -> List[Candidate]:
     """This is the abstract part of the Schulze method doing the actual work.
 
     The candidates are the vertices of a graph and the metric (in form
@@ -35,10 +48,10 @@ def _schulze_winners(d: Mapping[Tuple[str, str], int],
     return winners
 
 
-def schulze_evaluate(votes: Collection[str],
-                     candidates: Collection[str],
+def schulze_evaluate(votes: Collection[Vote],
+                     candidates: Sequence[Candidate],
                      strength: StrengthCallback = winning_votes
-                     ) -> Tuple[str, List[Dict[str, Union[int, List[str]]]]]:
+                     ) -> Tuple[Vote, List[DetailedResultLevel]]:
     """Use the Schulze method to cumulate preference list into one list.
 
     Votes have the form ``3>0>1=2>4`` where the shortnames between the
@@ -50,6 +63,16 @@ def schulze_evaluate(votes: Collection[str],
     One thing to mention is, that we do not do any tie breaking.
 
     For a nice set of examples see the test suite.
+
+    Note that the candidates should already be sorted meaningful. The return of this
+    function is stable under arbitrary sorting of the candidates, but only identical
+    if the candidates are passed in the same order. This roots in the fact that the
+    result ``1=2>0`` and ``2=1>0`` carry the same meaning but are not identical.
+    Therefore, we determine the order of candidates equal to each other in the final
+    result by the order of those in the explicitly passed in candidates.
+
+    The return of this function is identical under arbitrary sorting of the votes passed
+    in. Moreover, the order of equal candidates in the passed in votes does not matter.
 
     :param votes: The vote strings on which base we want to determine the overall
       preference. One vote has the form ``3>0>1=2>4``.
@@ -104,7 +127,7 @@ def schulze_evaluate(votes: Collection[str],
          for x in candidates for y in candidates}
 
     # Third we execute the Schulze method by iteratively determining winners
-    result: List[List[str]] = []
+    result: List[List[Candidate]] = []
     while True:
         done = {x for level in result for x in level}
         # avoid sets to preserve ordering
@@ -115,14 +138,14 @@ def schulze_evaluate(votes: Collection[str],
         result.append(winners)
 
     # Return the aggregated preference list in the same format as the input votes are.
-    condensed = ">".join("=".join(level) for level in result)
+    condensed = Vote(">".join("=".join(level) for level in result))
     detailed = []
-    for lead, follow in zip(result, result[1:]):
-        level: Dict[str, Union[List[str], int]] = {
-            'winner': lead,
-            'loser': follow,
-            'pro_votes': counts[(lead[0], follow[0])],
-            'contra_votes': counts[(follow[0], lead[0])]
+    for preferred, rejected in zip(result, result[1:]):
+        level: DetailedResultLevel = {
+            'preferred': preferred,
+            'rejected': rejected,
+            'support': counts[(rejected[0], rejected[0])],
+            'opposition': counts[(rejected[0], preferred[0])]
         }
         detailed.append(level)
 
