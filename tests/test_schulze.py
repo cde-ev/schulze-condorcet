@@ -14,6 +14,12 @@ class ClassicalTestCase(TypedDict):
     detailed: List[DRL]
 
 
+class PreferentialTestCase(TypedDict):
+    input: List[Vote]
+    condensed: Vote
+    detailed: List[DRL]
+
+
 class MyTest(unittest.TestCase):
     def test_classical_voting(self) -> None:
         bar = Candidate('0')
@@ -99,47 +105,133 @@ class MyTest(unittest.TestCase):
         # this base set is designed to have a nearly homogeneous
         # distribution (meaning all things are preferred by at most one
         # vote)
-        base = (Vote("0>1>2>3>4"),
+        base = [Vote("0>1>2>3>4"),
                 Vote("4>3>2>1>0"),
                 Vote("4=0>1=3>2"),
                 Vote("3>0>2=4>1"),
                 Vote("1>2=3>4=0"),
-                Vote("2>1>4>0>3"))
+                Vote("2>1>4>0>3")]
+
         # the advanced set causes an even more perfect equilibrium
-        advanced = (Vote("4>2>3>1=0"),
+        advanced = [Vote("4>2>3>1=0"),
                     Vote("0>1=3>2=4"),
                     Vote("1=2>0=3=4"),
-                    Vote("0=3=4>1=2"))
-        tests: Tuple[Tuple[Vote, Tuple[Vote, ...]], ...] = (
-            (Vote("0=1>3>2>4"), tuple()),
-            (Vote("2=4>3>0>1"), (Vote("4>2>3>0>1"),)),
-            (Vote("2=4>1=3>0"), (Vote("4>2>3>1=0"),)),
-            (Vote("0=3=4>1=2"), (Vote("4>2>3>1=0"), Vote("0>1=3>2=4"))),
-            (Vote("1=2>0=3=4"), (Vote("4>2>3>1=0"), Vote("0>1=3>2=4"), Vote("1=2>0=3=4"))),
-            (Vote("0=3=4>1=2"), (Vote("4>2>3>1=0"), Vote("0>1=3>2=4"), Vote("1=2>0=3=4"), Vote("0=3=4>1=2"))),
-            (Vote("0=3=4>1=2"), advanced),
-            (Vote("0>1=3=4>2"), advanced + (Vote("0>1=2=3=4"),)),
-            (Vote("0=1>3=4>2"), advanced + (Vote("1>0=2=3=4"),)),
-            (Vote("2=3>0=4>1"), advanced + (Vote("2>0=1=3=4"),)),
-            (Vote("3>0=2=4>1"), advanced + (Vote("3>0=1=2=4"),)),
-            (Vote("4>0=3>1=2"), advanced + (Vote("4>0=1=2=3"),)),
-            (Vote("0>3>1=4>2"), advanced + (Vote("0>3>4=1>2"),)),
-            (Vote("0>3>4>1>2"), advanced + (Vote("0>3>4>1>2"),)),
-            (Vote("2>1>4>3>0"), advanced + (Vote("2>1>4>3>0"),)),
-            (Vote("4>3>2>0=1"), advanced + (Vote("4>3>2>1>0"),)),
-            (Vote("0>1>2=3>4"), advanced + (Vote("0>1>2>3>4"),)),
-            (Vote("0=3>1=2>4"), advanced + (Vote("0=1=2=3>4"),)),
-            (Vote("0=2=4>1>3"), advanced + (Vote("0=1=2=4>3"),)),
-            (Vote("0=3=4>1>2"), advanced + (Vote("0=1=3=4>2"),)),
-            (Vote("0=3=4>2>1"), advanced + (Vote("0=2=3=4>1"),)),
-            (Vote("1=3=4>2>0"), advanced + (Vote("1=2=3=4>0"),)),
-        )
+                    Vote("0=3=4>1=2")]
+
+        tests: List[PreferentialTestCase] = [
+            {
+                'input': base,
+                'condensed': Vote("0=1>3>2>4"),
+                'detailed': []
+            },
+            {
+                'input': base + [Vote("4>2>3>0>1")],
+                'condensed': Vote("2=4>3>0>1"),
+                'detailed': []
+            },
+            {
+                'input': base + [Vote("4>2>3>1=0")],
+                'condensed': Vote("2=4>1=3>0"),
+                'detailed': []
+            },
+            {
+                'input': base + [Vote("4>2>3>1=0"), Vote("0>1=3>2=4")],
+                'condensed': Vote("0=3=4>1=2"),
+                'detailed': []
+            },
+            {
+                'input': base + [Vote("4>2>3>1=0"), Vote("0>1=3>2=4"), Vote("1=2>0=3=4")],
+                'condensed': Vote("1=2>0=3=4"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced,
+                'condensed': Vote("0=3=4>1=2"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0>1=2=3=4")],
+                'condensed': Vote("0>1=3=4>2"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("1>0=2=3=4")],
+                'condensed': Vote("0=1>3=4>2"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("2>0=1=3=4")],
+                'condensed': Vote("2=3>0=4>1"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("3>0=1=2=4")],
+                'condensed': Vote("3>0=2=4>1"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("4>0=1=2=3")],
+                'condensed': Vote("4>0=3>1=2"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0>3>4=1>2")],
+                'condensed': Vote("0>3>1=4>2"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0>3>4>1>2")],
+                'condensed': Vote("0>3>4>1>2"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("2>1>4>3>0")],
+                'condensed': Vote("2>1>4>3>0"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("4>3>2>1>0")],
+                'condensed': Vote("4>3>2>0=1"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0>1>2>3>4")],
+                'condensed': Vote("0>1>2=3>4"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0=1=2=3>4")],
+                'condensed': Vote("0=3>1=2>4"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0=1=2=4>3")],
+                'condensed': Vote("0=2=4>1>3"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0=1=3=4>2")],
+                'condensed': Vote("0=3=4>1>2"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("0=2=3=4>1")],
+                'condensed': Vote("0=3=4>2>1"),
+                'detailed': []
+            },
+            {
+                'input': base + advanced + [Vote("1=2=3=4>0")],
+                'condensed': Vote("1=3=4>2>0"),
+                'detailed': []
+            },
+        ]
+
         for metric in {margin, winning_votes}:
-            for expectation, addons in tests:
-                with self.subTest(addons=addons, metric=metric):
-                    condensed, _ = schulze_evaluate(base + addons, candidates,
-                                                    strength=metric)
-                    self.assertEqual(expectation, condensed)
+            for test in tests:
+                with self.subTest(test=test, metric=metric):
+                    condensed, detailed = schulze_evaluate(
+                        test['input'], candidates, strength=metric)
+                    self.assertEqual(test['condensed'], condensed)
 
     def test_runtime(self) -> None:
         # silly test, since I just realized, that the algorithm runtime is
