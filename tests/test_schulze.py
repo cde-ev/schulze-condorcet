@@ -122,107 +122,176 @@ class MyTest(unittest.TestCase):
             {
                 'input': base,
                 'condensed': Vote("0=1>3>2>4"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c1], rejected=[c3], support=3, opposition=3),
+                    DRL(preferred=[c3], rejected=[c2], support=3, opposition=2),
+                    DRL(preferred=[c2], rejected=[c4], support=3, opposition=2)
+                ]
             },
             {
                 'input': base + [Vote("4>2>3>0>1")],
                 'condensed': Vote("2=4>3>0>1"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c2, c4], rejected=[c3], support=3, opposition=3),
+                    DRL(preferred=[c3], rejected=[bar], support=4, opposition=3),
+                    DRL(preferred=[bar], rejected=[c1], support=4, opposition=3)
+                ]
             },
             {
                 'input': base + [Vote("4>2>3>1=0")],
                 'condensed': Vote("2=4>1=3>0"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c2, c4], rejected=[c1, c3], support=4, opposition=3),
+                    DRL(preferred=[c1, c3], rejected=[bar], support=3, opposition=3)
+                ]
             },
             {
                 'input': base + [Vote("4>2>3>1=0"), Vote("0>1=3>2=4")],
                 'condensed': Vote("0=3=4>1=2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c3, c4], rejected=[c1, c2], support=4, opposition=3)
+                ]
             },
             {
                 'input': base + [Vote("4>2>3>1=0"), Vote("0>1=3>2=4"), Vote("1=2>0=3=4")],
                 'condensed': Vote("1=2>0=3=4"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c1, c2], rejected=[bar, c3, c4], support=4, opposition=4)
+                ]
             },
             {
                 'input': base + advanced,
                 'condensed': Vote("0=3=4>1=2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c3, c4], rejected=[c1, c2], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0>1=2=3=4")],
                 'condensed': Vote("0>1=3=4>2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar], rejected=[c1, c3, c4], support=6, opposition=4),
+                    DRL(preferred=[c1, c3, c4], rejected=[c2], support=4, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("1>0=2=3=4")],
                 'condensed': Vote("0=1>3=4>2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c1], rejected=[c3, c4], support=4, opposition=4),
+                    DRL(preferred=[c3, c4], rejected=[c2], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("2>0=1=3=4")],
                 'condensed': Vote("2=3>0=4>1"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c2, c3], rejected=[bar, c4], support=6, opposition=5),
+                    DRL(preferred=[bar, c4], rejected=[c1], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("3>0=1=2=4")],
                 'condensed': Vote("3>0=2=4>1"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c3], rejected=[bar, c2, c4], support=5, opposition=4),
+                    DRL(preferred=[bar, c2, c4], rejected=[c1], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("4>0=1=2=3")],
                 'condensed': Vote("4>0=3>1=2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c4], rejected=[bar, c3], support=4, opposition=3),
+                    DRL(preferred=[bar, c3], rejected=[c1, c2], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0>3>4=1>2")],
                 'condensed': Vote("0>3>1=4>2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar], rejected=[c3], support=5, opposition=4),
+                    DRL(preferred=[c3], rejected=[c1, c4], support=5, opposition=4),
+                    DRL(preferred=[c1, c4], rejected=[c2], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0>3>4>1>2")],
                 'condensed': Vote("0>3>4>1>2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar], rejected=[c3], support=5, opposition=4),
+                    DRL(preferred=[c3], rejected=[c4], support=5, opposition=4),
+                    DRL(preferred=[c4], rejected=[c1], support=6, opposition=5),
+                    DRL(preferred=[c1], rejected=[c2], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("2>1>4>3>0")],
                 'condensed': Vote("2>1>4>3>0"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c2], rejected=[c1], support=5, opposition=4),
+                    DRL(preferred=[c1], rejected=[c4], support=6, opposition=5),
+                    DRL(preferred=[c4], rejected=[c3], support=5, opposition=4),
+                    DRL(preferred=[c3], rejected=[bar], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("4>3>2>1>0")],
                 'condensed': Vote("4>3>2>0=1"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c4], rejected=[c3], support=5, opposition=4),
+                    DRL(preferred=[c3], rejected=[c2], support=6, opposition=4),
+                    DRL(preferred=[c2], rejected=[bar, c1], support=6, opposition=5)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0>1>2>3>4")],
                 'condensed': Vote("0>1>2=3>4"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar], rejected=[c1], support=6, opposition=4),
+                    DRL(preferred=[c1], rejected=[c2, c3], support=5, opposition=4),
+                    DRL(preferred=[c2, c3], rejected=[c4], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0=1=2=3>4")],
                 'condensed': Vote("0=3>1=2>4"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c3], rejected=[c1, c2], support=5, opposition=4),
+                    DRL(preferred=[c1, c2], rejected=[c4], support=6, opposition=5)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0=1=2=4>3")],
                 'condensed': Vote("0=2=4>1>3"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c2, c4], rejected=[c1], support=5, opposition=4),
+                    DRL(preferred=[c1], rejected=[c3], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0=1=3=4>2")],
                 'condensed': Vote("0=3=4>1>2"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c3, c4], rejected=[c1], support=5, opposition=4),
+                    DRL(preferred=[c1], rejected=[c2], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("0=2=3=4>1")],
                 'condensed': Vote("0=3=4>2>1"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[bar, c3, c4], rejected=[c2], support=5, opposition=5),
+                    DRL(preferred=[c2], rejected=[c1], support=5, opposition=4)
+                ]
             },
             {
                 'input': base + advanced + [Vote("1=2=3=4>0")],
                 'condensed': Vote("1=3=4>2>0"),
-                'detailed': []
+                'detailed': [
+                    DRL(preferred=[c1, c3, c4], rejected=[c2], support=4, opposition=4),
+                    DRL(preferred=[c2], rejected=[bar], support=6, opposition=5)
+                ]
             },
         ]
 
@@ -232,6 +301,7 @@ class MyTest(unittest.TestCase):
                     condensed, detailed = schulze_evaluate(
                         test['input'], candidates, strength=metric)
                     self.assertEqual(test['condensed'], condensed)
+                    self.assertEqual(test['detailed'], detailed)
 
     def test_runtime(self) -> None:
         # silly test, since I just realized, that the algorithm runtime is
