@@ -31,6 +31,8 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
     determine winners as maximal elements.
     """
     # First determine the strongest paths
+    # This is a variant of the Floyd–Warshall algorithm to determine the
+    # widest path.
     p = {(x, y): d[(x, y)] for x in candidates for y in candidates}
     for i in candidates:
         for j in candidates:
