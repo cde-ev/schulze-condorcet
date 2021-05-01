@@ -1,7 +1,7 @@
 import itertools
 from gettext import gettext as _
 from typing import (
-    Collection, Container, List, Mapping, NewType, Tuple, TypedDict, Sequence
+    Collection, Container, Dict, List, Mapping, NewType, Tuple, TypedDict, Sequence
 )
 
 from schulze_condorcet.strength import StrengthCallback, winning_votes
@@ -14,8 +14,8 @@ Candidate = NewType('Candidate', str)
 class DetailedResultLevel(TypedDict):
     preferred: List[Candidate]
     rejected: List[Candidate]
-    support: int
-    opposition: int
+    support: Dict[Tuple[Candidate, Candidate], int]
+    opposition: Dict[Tuple[Candidate, Candidate], int]
 
 
 def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
@@ -140,12 +140,18 @@ def schulze_evaluate(votes: Collection[Vote],
     # Return the aggregated preference list in the same format as the input votes are.
     condensed = Vote(">".join("=".join(level) for level in result))
     detailed = []
-    for preferred, rejected in zip(result, result[1:]):
+    for preferred_candidates, rejected_candidates in zip(result, result[1:]):
         level: DetailedResultLevel = {
-            'preferred': preferred,
-            'rejected': rejected,
-            'support': counts[(preferred[0], rejected[0])],
-            'opposition': counts[(rejected[0], preferred[0])]
+            'preferred': preferred_candidates,
+            'rejected': rejected_candidates,
+            'support': {
+                (preferred, rejected): counts[preferred, rejected]
+                for preferred in preferred_candidates
+                for rejected in rejected_candidates},
+            'opposition': {
+                (preferred, rejected): counts[rejected, preferred]
+                for preferred in preferred_candidates
+                for rejected in rejected_candidates}
         }
         detailed.append(level)
 
