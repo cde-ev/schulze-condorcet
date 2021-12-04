@@ -12,6 +12,8 @@ Candidate = NewType('Candidate', str)
 # A single vote, split into separate levels accordingly to (descending) preference.
 # All candidates at the same level (in the same inner tuple) have equal preference.
 SplitVote = Tuple[Tuple[Candidate, ...], ...]
+# How many voters prefer the first candidate over the second candidate.
+PairwisePreference = Dict[Tuple[Candidate, Candidate], int]
 
 
 class DetailedResultLevel(TypedDict):
@@ -97,6 +99,21 @@ def _subindex(alist: Collection[Container[str]], element: str) -> int:
     raise ValueError(_("Not in list."))
 
 
+def pairwise_preference(votes: Collection[Vote], candidates: Sequence[Candidate], *,
+                        _check=True) -> PairwisePreference:
+    """Calculate the pairwise preference of all candidates from all given votes."""
+    if _check:
+        _check_consistency(votes, candidates)
+
+    counts = {(x, y): 0 for x in candidates for y in candidates}
+    for vote in _split_votes(votes):
+        for x in candidates:
+            for y in candidates:
+                if _subindex(vote, x) < _subindex(vote, y):
+                    counts[(x, y)] += 1
+    return counts
+
+
 def schulze_evaluate(votes: Collection[Vote],
                      candidates: Sequence[Candidate],
                      strength: StrengthCallback = winning_votes
@@ -132,19 +149,11 @@ def schulze_evaluate(votes: Collection[Vote],
     :returns: The first Element is the aggregated result, the second is an more extended
       list, containing every level (descending) as dict with some extended information.
     """
-    split_votes = tuple(
-        tuple(lvl.split('=') for lvl in vote.split('>')) for vote in votes)
-
     # Validate votes and candidate input to be consistent
     _check_consistency(votes, candidates)
 
     # First we count the number of votes preferring x to y
-    counts = {(x, y): 0 for x in candidates for y in candidates}
-    for vote in split_votes:
-        for x in candidates:
-            for y in candidates:
-                if _subindex(vote, x) < _subindex(vote, y):
-                    counts[(x, y)] += 1
+    counts = pairwise_preference(votes, candidates, _check=False)
 
     # Second we calculate a numeric link strength abstracting the problem into the realm
     # of graphs with one vertex per candidate
