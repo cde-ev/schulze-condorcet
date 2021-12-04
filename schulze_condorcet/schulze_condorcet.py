@@ -66,6 +66,26 @@ def _split_votes(votes: Collection[Vote]) -> List[SplitVote]:
     )
 
 
+def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate]) -> None:
+    """Check that the given vote strings are consistent with the provided candidates.
+
+    This means, each vote string contains exactly the given candidates, separated by
+    '>' and '=', and each candidate occurs in each vote string exactly ones.
+    """
+    candidates_set = set(candidates)
+    for vote in _split_votes(votes):
+        vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
+        vote_candidates_set = set(vote_candidates)
+        if candidates_set != vote_candidates_set:
+            if candidates_set < vote_candidates_set:
+                raise ValueError(_("Superfluous candidate in vote string."))
+            else:
+                raise ValueError(_("Missing candidate in vote string."))
+        if not len(vote_candidates) == len(vote_candidates_set):
+            raise ValueError(_("Every candidate must occur exactly once in each vote."))
+    return None
+
+
 def schulze_evaluate(votes: Collection[Vote],
                      candidates: Sequence[Candidate],
                      strength: StrengthCallback = winning_votes
@@ -104,19 +124,8 @@ def schulze_evaluate(votes: Collection[Vote],
     split_votes = tuple(
         tuple(lvl.split('=') for lvl in vote.split('>')) for vote in votes)
 
-    # Check the candidates used in each vote string are exactly those explicitly given
-    # in candidates and occur exactly once
-    candidates_set = set(candidates)
-    for vote in split_votes:
-        vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
-        vote_candidates_set = set(vote_candidates)
-        if candidates_set != vote_candidates_set:
-            if candidates_set < vote_candidates_set:
-                raise ValueError(_("Superfluous candidate in vote string."))
-            else:
-                raise ValueError(_("Missing candidate in vote string."))
-        if not len(vote_candidates) == len(vote_candidates_set):
-            raise ValueError(_("Every candidate must occur exactly once in each vote."))
+    # Validate votes and candidate input to be consistent
+    _check_consistency(votes, candidates)
 
     def _subindex(alist: Collection[Container[str]], element: str) -> int:
         """The element is in the list at which position in the big list.
