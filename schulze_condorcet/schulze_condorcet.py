@@ -86,6 +86,17 @@ def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate])
     return None
 
 
+def _subindex(alist: Collection[Container[str]], element: str) -> int:
+    """The element is in the list at which position in the big list.
+
+    :returns: ``ret`` such that ``element in alist[ret]``
+    """
+    for index, sublist in enumerate(alist):
+        if element in sublist:
+            return index
+    raise ValueError(_("Not in list."))
+
+
 def schulze_evaluate(votes: Collection[Vote],
                      candidates: Sequence[Candidate],
                      strength: StrengthCallback = winning_votes
@@ -126,17 +137,6 @@ def schulze_evaluate(votes: Collection[Vote],
 
     # Validate votes and candidate input to be consistent
     _check_consistency(votes, candidates)
-
-    def _subindex(alist: Collection[Container[str]], element: str) -> int:
-        """The element is in the list at which position in the big list.
-
-        :returns: ``ret`` such that ``element in alist[ret]``
-        """
-        for index, sublist in enumerate(alist):
-            if element in sublist:
-                return index
-        # This line can not be reached since we validate for well-formed votes above
-        raise ValueError(_("Not in list."))  # pragma: no cover
 
     # First we count the number of votes preferring x to y
     counts = {(x, y): 0 for x in candidates for y in candidates}
