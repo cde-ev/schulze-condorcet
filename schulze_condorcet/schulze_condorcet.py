@@ -9,6 +9,9 @@ from schulze_condorcet.strength import StrengthCallback, winning_votes
 
 Vote = NewType('Vote', str)
 Candidate = NewType('Candidate', str)
+# A single vote, split into separate levels accordingly to (descending) preference.
+# All candidates at the same level (in the same inner tuple) have equal preference.
+SplitVote = Tuple[Tuple[Candidate, ...], ...]
 
 
 class DetailedResultLevel(TypedDict):
@@ -48,6 +51,19 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
         if all(p[(i, j)] >= p[(j, i)] for j in candidates):
             winners.append(i)
     return winners
+
+
+def _split_votes(votes: Collection[Vote]) -> List[SplitVote]:
+    """Split a list of vote strings into their candidates."""
+    return (
+        list(
+            tuple(
+                tuple(
+                    Candidate(candidate) for candidate in lvl.split('=')
+                ) for lvl in vote.split('>')
+            ) for vote in votes
+        )
+    )
 
 
 def schulze_evaluate(votes: Collection[Vote],
