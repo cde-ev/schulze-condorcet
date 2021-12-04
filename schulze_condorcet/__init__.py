@@ -1,3 +1,4 @@
-from .schulze_condorcet import schulze_evaluate, Candidate, Vote
+from .schulze_condorcet import (
+    detailed_result, pairwise_preference, schulze_evaluate, Candidate, Vote)
 
-__all__ = ['schulze_evaluate', 'Candidate', 'Vote']
+__all__ = ['detailed_result', 'pairwise_preference', 'schulze_evaluate', 'Candidate', 'Vote']
