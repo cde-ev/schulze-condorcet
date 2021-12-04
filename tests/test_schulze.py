@@ -3,7 +3,7 @@ import random
 from typing import Dict, List, Optional, Tuple, TypedDict
 import unittest
 
-from schulze_condorcet import schulze_evaluate, Candidate, Vote
+from schulze_condorcet import detailed_result, pairwise_preference, schulze_evaluate, Candidate, Vote
 from schulze_condorcet.schulze_condorcet import DetailedResultLevel as DRL
 from schulze_condorcet.strength import margin, winning_votes
 
@@ -114,9 +114,11 @@ class MyTest(unittest.TestCase):
         for metric in {margin, winning_votes}:
             for test in [test_1, test_2, test_3, test_4]:
                 with self.subTest(test=test, metric=metric):
-                    condensed, detailed = schulze_evaluate(
-                        _classical_votes(test['input'], candidates),
-                        candidates_with_bar, strength=metric)
+                    votes = _classical_votes(test['input'], candidates)
+                    condensed = schulze_evaluate(
+                        votes, candidates_with_bar, strength=metric)
+                    counts = pairwise_preference(votes, candidates_with_bar)
+                    detailed = detailed_result(condensed, counts)
                     self.assertEqual(test['condensed'], condensed)
                     self.assertEqual(test['detailed'], detailed)
 
@@ -420,8 +422,10 @@ class MyTest(unittest.TestCase):
         for metric in {margin, winning_votes}:
             for test in tests:
                 with self.subTest(test=test, metric=metric):
-                    condensed, detailed = schulze_evaluate(
+                    condensed = schulze_evaluate(
                         test['input'], candidates, strength=metric)
+                    counts = pairwise_preference(test['input'], candidates)
+                    detailed = detailed_result(condensed, counts)
                     self.assertEqual(test['condensed'], condensed)
                     self.assertEqual(test['detailed'], detailed)
 
@@ -495,22 +499,22 @@ class MyTest(unittest.TestCase):
 
         candidates = (c0, c1, c2)
         reference_votes = [Vote("0=1>2"), Vote("0=1=2")]
-        reference_condensed, _ = schulze_evaluate(reference_votes, candidates)
+        reference_condensed = schulze_evaluate(reference_votes, candidates)
         self.assertEqual("0=1>2", reference_condensed)
 
         # result is identical under arbitrary order of incoming votes
         votes = [Vote("0=1=2"), Vote("0=1>2")]
-        condensed, _ = schulze_evaluate(votes, candidates)
+        condensed = schulze_evaluate(votes, candidates)
         self.assertEqual(reference_condensed, condensed)
 
         # result is identical under arbitrary sorting of equal candidates in each vote
         votes = [Vote("1=0>2"), Vote("1=2=0")]
-        condensed, _ = schulze_evaluate(votes, candidates)
+        condensed = schulze_evaluate(votes, candidates)
         self.assertEqual(reference_condensed, condensed)
 
         # result is stable but not identical under different sorting of candidates
         candidates = (c1, c0, c2)
-        condensed, _ = schulze_evaluate(reference_votes, candidates)
+        condensed = schulze_evaluate(reference_votes, candidates)
         self.assertEqual("1=0>2", condensed)
 
 
