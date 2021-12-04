@@ -7,7 +7,11 @@ from typing import (
 from schulze_condorcet.strength import StrengthCallback, winning_votes
 
 
+# A single vote, inputted as raw vote string. Consists only of the candidates,
+# separated by '>' and '=' to express the preference between the candidates.
 Vote = NewType('Vote', str)
+# A single candidate. Can be any string, expect that it must not contain the special
+# characters '>' and '='.
 Candidate = NewType('Candidate', str)
 # A single vote, split into separate levels accordingly to (descending) preference.
 # All candidates at the same level (in the same inner tuple) have equal preference.
@@ -82,6 +86,8 @@ def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate])
     This means, each vote string contains exactly the given candidates, separated by
     '>' and '=', and each candidate occurs in each vote string exactly ones.
     """
+    if any(">" in candidate or "=" in candidate for candidate in candidates):
+        raise ValueError(_("A candidate contains a forbidden character."))
     candidates_set = set(candidates)
     for vote in _split_votes(votes):
         vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
