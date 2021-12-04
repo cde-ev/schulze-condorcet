@@ -55,17 +55,20 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
     return winners
 
 
-def _split_votes(votes: Collection[Vote]) -> List[SplitVote]:
-    """Split a list of vote strings into their candidates."""
+def _split_vote(vote: Vote) -> SplitVote:
+    """Split a vote string into its candidates."""
     return (
-        list(
+        tuple(
             tuple(
-                tuple(
-                    Candidate(candidate) for candidate in lvl.split('=')
-                ) for lvl in vote.split('>')
-            ) for vote in votes
+                Candidate(candidate) for candidate in level.split('=')
+            ) for level in vote.split('>')
         )
     )
+
+
+def _split_votes(votes: Collection[Vote]) -> List[SplitVote]:
+    """Split a list of vote strings into their candidates."""
+    return list(_split_vote(vote) for vote in votes)
 
 
 def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate]) -> None:
