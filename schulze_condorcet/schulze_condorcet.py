@@ -71,6 +71,11 @@ def _split_votes(votes: Collection[Vote]) -> List[SplitVote]:
     return list(_split_vote(vote) for vote in votes)
 
 
+def _recombine_vote(vote: SplitVote) -> Vote:
+    """Construct a vote string from its candidates, opposite of _split_vote."""
+    return Vote(">".join("=".join(level) for level in vote))
+
+
 def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate]) -> None:
     """Check that the given vote strings are consistent with the provided candidates.
 
