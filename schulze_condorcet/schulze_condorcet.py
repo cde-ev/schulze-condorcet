@@ -72,7 +72,7 @@ def _split_vote(vote: Vote) -> SplitVote:
 
 def _split_votes(votes: Collection[Vote]) -> List[SplitVote]:
     """Split a list of vote strings into their candidates."""
-    return list(_split_vote(vote) for vote in votes)
+    return [_split_vote(vote) for vote in votes]
 
 
 def _recombine_vote(vote: SplitVote) -> Vote:
@@ -84,7 +84,7 @@ def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate])
     """Check that the given vote strings are consistent with the provided candidates.
 
     This means, each vote string contains exactly the given candidates, separated by
-    '>' and '=', and each candidate occurs in each vote string exactly ones.
+    '>' and '=', and each candidate occurs in each vote string exactly once.
     """
     if any(">" in candidate or "=" in candidate for candidate in candidates):
         raise ValueError(_("A candidate contains a forbidden character."))
@@ -99,7 +99,6 @@ def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate])
                 raise ValueError(_("Missing candidate in vote string."))
         if not len(vote_candidates) == len(vote_candidates_set):
             raise ValueError(_("Every candidate must occur exactly once in each vote."))
-    return None
 
 
 def _subindex(alist: Collection[Container[str]], element: str) -> int:
@@ -190,9 +189,9 @@ def schulze_evaluate(votes: Collection[Vote],
 
 
 def detailed_result(result: Vote, counts: PairwisePreference) -> List[DetailedResultLevel]:
-    """Construct a more detailed vision on the result by adding some stats.
+    """Construct a more detailed representation of the result by adding some stats.
 
-    This express how much difference there was between the different levels of
+    This expresses how much of a difference there was between the individual levels of
     preference in the overall result.
     """
     split_result = _split_vote(result)
