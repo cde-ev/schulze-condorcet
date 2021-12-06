@@ -15,7 +15,7 @@ Vote = NewType('Vote', str)
 Candidate = NewType('Candidate', str)
 # A single vote, split into separate levels accordingly to (descending) preference.
 # All candidates at the same level (in the same inner tuple) have equal preference.
-SplitVote = Tuple[Tuple[Candidate, ...], ...]
+SplitVote = Sequence[Sequence[Candidate]]
 # How many voters prefer the first candidate over the second candidate.
 PairwisePreference = Dict[Tuple[Candidate, Candidate], int]
 
@@ -184,8 +184,7 @@ def schulze_evaluate(votes: Collection[Vote],
         result.append(winners)
 
     # At last, construct a vote string reflecting the overall preference
-    result_tuple = tuple(tuple(candidate for candidate in level) for level in result)
-    return _recombine_vote(result_tuple)
+    return _recombine_vote(result)
 
 
 def detailed_result(result: Vote, counts: PairwisePreference) -> List[DetailedResultLevel]:
