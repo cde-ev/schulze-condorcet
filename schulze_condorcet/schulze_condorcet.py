@@ -27,8 +27,8 @@ SchulzeResult = List[List[Candidate]]
 class DetailedResultLevel(TypedDict):
     preferred: List[Candidate]
     rejected: List[Candidate]
-    support: Dict[Tuple[Candidate, Candidate], int]
-    opposition: Dict[Tuple[Candidate, Candidate], int]
+    support: PairwisePreference     # between pairs of preferred and rejected candidates
+    opposition: PairwisePreference  # between pairs of rejected and preferred candidates
 
 
 def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
