@@ -18,6 +18,10 @@ Candidate = NewType('Candidate', str)
 SplitVote = Sequence[Sequence[Candidate]]
 # How many voters prefer the first candidate over the second candidate.
 PairwisePreference = Dict[Tuple[Candidate, Candidate], int]
+# The link strength between two candidates.
+LinkStrength = Dict[Tuple[Candidate, Candidate], int]
+# The result of the schulze_condorcet method. This has the same structure as a SplitVote.
+SchulzeResult = List[List[Candidate]]
 
 
 class DetailedResultLevel(TypedDict):
@@ -127,10 +131,45 @@ def pairwise_preference(votes: Collection[Vote], candidates: Sequence[Candidate]
     return counts
 
 
-def schulze_evaluate(votes: Collection[Vote],
-                     candidates: Sequence[Candidate],
-                     strength: StrengthCallback = winning_votes
-                     ) -> Vote:
+def _schulze_evaluate_routine(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+        strength: StrengthCallback
+) -> Tuple[PairwisePreference, LinkStrength, SchulzeResult]:
+    """The routine to determine the result of the schulze-condorcet method.
+
+    This is outsourced in a helper function to avoid duplicate code or duplicate
+    calculations inside the schulze_evaluate and schulze_evaluate_detailed functions.
+    """
+    # First we count the number of votes preferring x to y
+    counts = pairwise_preference(votes, candidates, _check=False)
+
+    # Second we calculate a numeric link strength abstracting the problem into the realm
+    # of graphs with one vertex per candidate
+    d: LinkStrength = {(x, y): strength(support=counts[(x, y)],
+                                        opposition=counts[(y, x)],
+                                        totalvotes=len(votes))
+                       for x in candidates for y in candidates}
+
+    # Third we execute the Schulze method by iteratively determining winners
+    result: SchulzeResult = []
+    while True:
+        done = {x for level in result for x in level}
+        # avoid sets to preserve ordering
+        remaining = tuple(c for c in candidates if c not in done)
+        if not remaining:
+            break
+        winners = _schulze_winners(d, remaining)
+        result.append(winners)
+
+    return counts, d, result
+
+
+def schulze_evaluate(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+        strength: StrengthCallback = winning_votes
+) -> Vote:
     """Use the Schulze method to cumulate preference lists (votes) into one list (vote).
 
     The Schulze method is described here: http://www.9mail.de/m-schulze/schulze1.pdf.
@@ -162,40 +201,34 @@ def schulze_evaluate(votes: Collection[Vote],
     # Validate votes and candidate input to be consistent
     _check_consistency(votes, candidates)
 
-    # First we count the number of votes preferring x to y
-    counts = pairwise_preference(votes, candidates, _check=False)
+    _, _, result = _schulze_evaluate_routine(votes, candidates, strength)
 
-    # Second we calculate a numeric link strength abstracting the problem into the realm
-    # of graphs with one vertex per candidate
-    d = {(x, y): strength(support=counts[(x, y)],
-                          opposition=counts[(y, x)],
-                          totalvotes=len(votes))
-         for x in candidates for y in candidates}
-
-    # Third we execute the Schulze method by iteratively determining winners
-    result: List[List[Candidate]] = []
-    while True:
-        done = {x for level in result for x in level}
-        # avoid sets to preserve ordering
-        remaining = tuple(c for c in candidates if c not in done)
-        if not remaining:
-            break
-        winners = _schulze_winners(d, remaining)
-        result.append(winners)
-
-    # At last, construct a vote string reflecting the overall preference
+    # Construct a vote string reflecting the overall preference
     return _recombine_vote(result)
 
 
-def detailed_result(result: Vote, counts: PairwisePreference) -> List[DetailedResultLevel]:
+def schulze_evaluate_detailed(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+        strength: StrengthCallback = winning_votes
+) -> List[DetailedResultLevel]:
     """Construct a more detailed representation of the result by adding some stats.
 
-    This expresses how much of a difference there was between the individual levels of
-    preference in the overall result.
+    This works equally to the schulze_evaluate function but constructs a more detailed
+    result, including how much of a difference there was between the individual levels
+    of preference in the overall result.
     """
-    split_result = _split_vote(result)
+    # Validate votes and candidate input to be consistent
+    _check_consistency(votes, candidates)
+
+    counts, _, result = _schulze_evaluate_routine(votes, candidates, strength)
+
+    # Construct the DetailedResult. This contains a list of dicts, one for each
+    # level of preference, containing the preferred and rejected candidates and the
+    # numbers of support and opposition (the pairwise preference) between all
+    # pairwise combinations of preferred and rejected candidates.
     detailed: List[DetailedResultLevel] = list()
-    for preferred_candidates, rejected_candidates in zip(split_result, split_result[1:]):
+    for preferred_candidates, rejected_candidates in zip(result, result[1:]):
         level: DetailedResultLevel = {
             # TODO maybe use simply tuples instead of lists here?
             'preferred': list(preferred_candidates),
