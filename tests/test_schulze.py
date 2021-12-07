@@ -3,7 +3,7 @@ import random
 from typing import Dict, List, Optional, Tuple, TypedDict
 import unittest
 
-from schulze_condorcet import detailed_result, pairwise_preference, schulze_evaluate, Candidate, Vote
+from schulze_condorcet import pairwise_preference, schulze_evaluate, schulze_evaluate_detailed, Candidate, Vote
 from schulze_condorcet.schulze_condorcet import DetailedResultLevel as DRL
 from schulze_condorcet.strength import margin, winning_votes
 
@@ -117,8 +117,8 @@ class MyTest(unittest.TestCase):
                     votes = _classical_votes(test['input'], candidates)
                     condensed = schulze_evaluate(
                         votes, candidates_with_bar, strength=metric)
-                    counts = pairwise_preference(votes, candidates_with_bar)
-                    detailed = detailed_result(condensed, counts)
+                    detailed = schulze_evaluate_detailed(
+                        votes, candidates_with_bar, strength=metric)
                     self.assertEqual(test['condensed'], condensed)
                     self.assertEqual(test['detailed'], detailed)
 
@@ -424,8 +424,8 @@ class MyTest(unittest.TestCase):
                 with self.subTest(test=test, metric=metric):
                     condensed = schulze_evaluate(
                         test['input'], candidates, strength=metric)
-                    counts = pairwise_preference(test['input'], candidates)
-                    detailed = detailed_result(condensed, counts)
+                    detailed = schulze_evaluate_detailed(
+                        test['input'], candidates, strength=metric)
                     self.assertEqual(test['condensed'], condensed)
                     self.assertEqual(test['detailed'], detailed)
 
