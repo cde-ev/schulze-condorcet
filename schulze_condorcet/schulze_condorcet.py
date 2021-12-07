@@ -116,9 +116,21 @@ def _subindex(alist: Collection[Container[str]], element: str) -> int:
     raise ValueError(_("Not in list."))
 
 
-def pairwise_preference(votes: Collection[Vote], candidates: Sequence[Candidate], *,
-                        _check=True) -> PairwisePreference:
-    """Calculate the pairwise preference of all candidates from all given votes."""
+def pairwise_preference(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+        *,
+        _check=True
+) -> PairwisePreference:
+    """Calculate the pairwise preference of all candidates from all given votes.
+
+    While this does not yet reveal the overall preference, it can give some more
+    insights in the sentiments of the voters regarding two candidates compared to each
+    other.
+
+    :param _check: Since this is also used internally, this is used to avoid double
+      input validation. This should not be used if the function is called from outside.
+    """
     if _check:
         _check_consistency(votes, candidates)
 
