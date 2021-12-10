@@ -116,24 +116,11 @@ def _subindex(alist: Collection[Container[str]], element: str) -> int:
     raise ValueError(_("Not in list."))
 
 
-def pairwise_preference(
+def _pairwise_preference(
         votes: Collection[Vote],
         candidates: Sequence[Candidate],
-        *,
-        _check=True
 ) -> PairwisePreference:
-    """Calculate the pairwise preference of all candidates from all given votes.
-
-    While this does not yet reveal the overall preference, it can give some more
-    insights in the sentiments of the voters regarding two candidates compared to each
-    other.
-
-    :param _check: Since this is also used internally, this is used to avoid double
-      input validation. This should not be used if the function is called from outside.
-    """
-    if _check:
-        _check_consistency(votes, candidates)
-
+    """Calculate the pairwise preference of all candidates from all given votes."""
     counts = {(x, y): 0 for x in candidates for y in candidates}
     for vote in _split_votes(votes):
         for x in candidates:
@@ -154,7 +141,7 @@ def _schulze_evaluate_routine(
     calculations inside the schulze_evaluate and schulze_evaluate_detailed functions.
     """
     # First we count the number of votes preferring x to y
-    counts = pairwise_preference(votes, candidates, _check=False)
+    counts = _pairwise_preference(votes, candidates)
 
     # Second we calculate a numeric link strength abstracting the problem into the realm
     # of graphs with one vertex per candidate
@@ -256,3 +243,19 @@ def schulze_evaluate_detailed(
         }
         detailed.append(level)
     return detailed
+
+
+def pairwise_preference(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+) -> PairwisePreference:
+    """Calculate the pairwise preference of all candidates from all given votes.
+
+    While this does not yet reveal the overall preference, it can give some more
+    insights in the sentiments of the voters regarding two candidates compared to each
+    other.
+    """
+    # Validate votes and candidate input to be consistent
+    _check_consistency(votes, candidates)
+
+    return _pairwise_preference(votes, candidates)
