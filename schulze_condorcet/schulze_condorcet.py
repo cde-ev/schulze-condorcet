@@ -7,15 +7,28 @@ from typing import (
 from schulze_condorcet.strength import StrengthCallback, winning_votes
 
 
+# A single vote, inputted as raw vote string. Consists only of the candidates,
+# separated by '>' and '=' to express the preference between the candidates.
 Vote = NewType('Vote', str)
+# A single candidate. Can be any string, expect that it must not contain the special
+# characters '>' and '='.
 Candidate = NewType('Candidate', str)
+# A single vote, split into separate levels accordingly to (descending) preference.
+# All candidates at the same level (in the same inner tuple) have equal preference.
+SplitVote = Sequence[Sequence[Candidate]]
+# How many voters prefer the first candidate over the second candidate.
+PairwisePreference = Dict[Tuple[Candidate, Candidate], int]
+# The link strength between two candidates.
+LinkStrength = Dict[Tuple[Candidate, Candidate], int]
+# The result of the schulze_condorcet method. This has the same structure as a SplitVote.
+SchulzeResult = List[List[Candidate]]
 
 
 class DetailedResultLevel(TypedDict):
     preferred: List[Candidate]
     rejected: List[Candidate]
-    support: Dict[Tuple[Candidate, Candidate], int]
-    opposition: Dict[Tuple[Candidate, Candidate], int]
+    support: PairwisePreference     # between pairs of preferred and rejected candidates
+    opposition: PairwisePreference  # between pairs of rejected and preferred candidates
 
 
 def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
@@ -50,17 +63,116 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
     return winners
 
 
-def schulze_evaluate(votes: Collection[Vote],
-                     candidates: Sequence[Candidate],
-                     strength: StrengthCallback = winning_votes
-                     ) -> Tuple[Vote, List[DetailedResultLevel]]:
-    """Use the Schulze method to cumulate preference list into one list.
+def _split_vote(vote: Vote) -> SplitVote:
+    """Split a vote string into its candidates."""
+    return (
+        tuple(
+            tuple(
+                Candidate(candidate) for candidate in level.split('=')
+            ) for level in vote.split('>')
+        )
+    )
 
-    Votes have the form ``3>0>1=2>4`` where the shortnames between the
-    relation signs are exactly those passed in the ``candidates`` parameter.
 
-    The Schulze method is described in the pdf found in the ``related``
-    folder. Also the Wikipedia article is pretty nice.
+def _split_votes(votes: Collection[Vote]) -> List[SplitVote]:
+    """Split a list of vote strings into their candidates."""
+    return [_split_vote(vote) for vote in votes]
+
+
+def _recombine_vote(vote: SplitVote) -> Vote:
+    """Construct a vote string from its candidates, opposite of _split_vote."""
+    return Vote(">".join("=".join(level) for level in vote))
+
+
+def _check_consistency(votes: Collection[Vote], candidates: Sequence[Candidate]) -> None:
+    """Check that the given vote strings are consistent with the provided candidates.
+
+    This means, each vote string contains exactly the given candidates, separated by
+    '>' and '=', and each candidate occurs in each vote string exactly once.
+    """
+    if any(">" in candidate or "=" in candidate for candidate in candidates):
+        raise ValueError(_("A candidate contains a forbidden character."))
+    candidates_set = set(candidates)
+    for vote in _split_votes(votes):
+        vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
+        vote_candidates_set = set(vote_candidates)
+        if candidates_set != vote_candidates_set:
+            if candidates_set < vote_candidates_set:
+                raise ValueError(_("Superfluous candidate in vote string."))
+            else:
+                raise ValueError(_("Missing candidate in vote string."))
+        if not len(vote_candidates) == len(vote_candidates_set):
+            raise ValueError(_("Every candidate must occur exactly once in each vote."))
+
+
+def _subindex(alist: Collection[Container[str]], element: str) -> int:
+    """The element is in the list at which position in the big list.
+
+    :returns: ``ret`` such that ``element in alist[ret]``
+    """
+    for index, sublist in enumerate(alist):
+        if element in sublist:
+            return index
+    raise ValueError(_("Not in list."))
+
+
+def _pairwise_preference(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+) -> PairwisePreference:
+    """Calculate the pairwise preference of all candidates from all given votes."""
+    counts = {(x, y): 0 for x in candidates for y in candidates}
+    for vote in _split_votes(votes):
+        for x in candidates:
+            for y in candidates:
+                if _subindex(vote, x) < _subindex(vote, y):
+                    counts[(x, y)] += 1
+    return counts
+
+
+def _schulze_evaluate_routine(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+        strength: StrengthCallback
+) -> Tuple[PairwisePreference, SchulzeResult]:
+    """The routine to determine the result of the schulze-condorcet method.
+
+    This is outsourced into this helper function to avoid duplicate code or duplicate
+    calculations inside the schulze_evaluate and schulze_evaluate_detailed functions.
+    """
+    # First we count the number of votes preferring x to y
+    counts = _pairwise_preference(votes, candidates)
+
+    # Second we calculate a numeric link strength abstracting the problem into the realm
+    # of graphs with one vertex per candidate
+    d: LinkStrength = {(x, y): strength(support=counts[(x, y)],
+                                        opposition=counts[(y, x)],
+                                        totalvotes=len(votes))
+                       for x in candidates for y in candidates}
+
+    # Third we execute the Schulze method by iteratively determining winners
+    result: SchulzeResult = []
+    while True:
+        done = {x for level in result for x in level}
+        # avoid sets to preserve ordering
+        remaining = tuple(c for c in candidates if c not in done)
+        if not remaining:
+            break
+        winners = _schulze_winners(d, remaining)
+        result.append(winners)
+
+    return counts, result
+
+
+def schulze_evaluate(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+        strength: StrengthCallback = winning_votes
+) -> Vote:
+    """Use the Schulze method to cumulate preference lists (votes) into one list (vote).
+
+    The Schulze method is described here: http://www.9mail.de/m-schulze/schulze1.pdf.
+    Also the Wikipedia article is pretty nice.
 
     One thing to mention is, that we do not do any tie breaking.
 
@@ -77,75 +189,49 @@ def schulze_evaluate(votes: Collection[Vote],
     in. Moreover, the order of equal candidates in the passed in votes does not matter.
 
     :param votes: The vote strings on which base we want to determine the overall
-      preference. One vote has the form ``3>0>1=2>4``.
+      preference. One vote has the form ``3>0>1=2>4``, where the names between the
+      relation signs are exactly those passed in with the ``candidates`` parameter.
     :param candidates: We require that the candidates be explicitly passed. This allows
       for more flexibility (like returning a useful result for zero votes).
     :param strength: A function which will be used as the metric on the graph of all
       candidates. See `strength.py` for more detailed information.
-    :returns: The first Element is the aggregated result, the second is an more extended
-      list, containing every level (descending) as dict with some extended information.
+    :returns: A vote string, reflecting the overall preference.
     """
-    split_votes = tuple(
-        tuple(lvl.split('=') for lvl in vote.split('>')) for vote in votes)
+    # Validate votes and candidate input to be consistent
+    _check_consistency(votes, candidates)
 
-    # Check the candidates used in each vote string are exactly those explicitly given
-    # in candidates and occur exactly once
-    candidates_set = set(candidates)
-    for vote in split_votes:
-        vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
-        vote_candidates_set = set(vote_candidates)
-        if candidates_set != vote_candidates_set:
-            if candidates_set < vote_candidates_set:
-                raise ValueError(_("Superfluous candidate in vote string."))
-            else:
-                raise ValueError(_("Missing candidate in vote string."))
-        if not len(vote_candidates) == len(vote_candidates_set):
-            raise ValueError(_("Every candidate must occur exactly once in each vote."))
+    _, result = _schulze_evaluate_routine(votes, candidates, strength)
 
-    def _subindex(alist: Collection[Container[str]], element: str) -> int:
-        """The element is in the list at which position in the big list.
+    # Construct a vote string reflecting the overall preference
+    return _recombine_vote(result)
 
-        :returns: ``ret`` such that ``element in alist[ret]``
-        """
-        for index, sublist in enumerate(alist):
-            if element in sublist:
-                return index
-        # This line can not be reached since we validate for well-formed votes above
-        raise ValueError(_("Not in list."))  # pragma: no cover
 
-    # First we count the number of votes preferring x to y
-    counts = {(x, y): 0 for x in candidates for y in candidates}
-    for vote in split_votes:
-        for x in candidates:
-            for y in candidates:
-                if _subindex(vote, x) < _subindex(vote, y):
-                    counts[(x, y)] += 1
+def schulze_evaluate_detailed(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+        strength: StrengthCallback = winning_votes
+) -> List[DetailedResultLevel]:
+    """Construct a more detailed representation of the result by adding some stats.
 
-    # Second we calculate a numeric link strength abstracting the problem into the realm
-    # of graphs with one vertex per candidate
-    d = {(x, y): strength(support=counts[(x, y)],
-                          opposition=counts[(y, x)],
-                          totalvotes=len(votes))
-         for x in candidates for y in candidates}
+    This works equally to the schulze_evaluate function but constructs a more detailed
+    result, including how much of a difference there was between the individual levels
+    of preference in the overall result.
+    """
+    # Validate votes and candidate input to be consistent
+    _check_consistency(votes, candidates)
 
-    # Third we execute the Schulze method by iteratively determining winners
-    result: List[List[Candidate]] = []
-    while True:
-        done = {x for level in result for x in level}
-        # avoid sets to preserve ordering
-        remaining = tuple(c for c in candidates if c not in done)
-        if not remaining:
-            break
-        winners = _schulze_winners(d, remaining)
-        result.append(winners)
+    counts, result = _schulze_evaluate_routine(votes, candidates, strength)
 
-    # Return the aggregated preference list in the same format as the input votes are.
-    condensed = Vote(">".join("=".join(level) for level in result))
-    detailed = []
+    # Construct the DetailedResult. This contains a list of dicts, one for each
+    # level of preference, containing the preferred and rejected candidates and the
+    # numbers of support and opposition (the pairwise preference) between all
+    # pairwise combinations of preferred and rejected candidates.
+    detailed: List[DetailedResultLevel] = list()
     for preferred_candidates, rejected_candidates in zip(result, result[1:]):
         level: DetailedResultLevel = {
-            'preferred': preferred_candidates,
-            'rejected': rejected_candidates,
+            # TODO maybe use simply tuples instead of lists here?
+            'preferred': list(preferred_candidates),
+            'rejected': list(rejected_candidates),
             'support': {
                 (preferred, rejected): counts[preferred, rejected]
                 for preferred in preferred_candidates
@@ -156,5 +242,20 @@ def schulze_evaluate(votes: Collection[Vote],
                 for rejected in rejected_candidates}
         }
         detailed.append(level)
+    return detailed
 
-    return condensed, detailed
+
+def pairwise_preference(
+        votes: Collection[Vote],
+        candidates: Sequence[Candidate],
+) -> PairwisePreference:
+    """Calculate the pairwise preference of all candidates from all given votes.
+
+    While this does not yet reveal the overall preference, it can give some more
+    insights in the sentiments of the voters regarding two candidates compared to each
+    other.
+    """
+    # Validate votes and candidate input to be consistent
+    _check_consistency(votes, candidates)
+
+    return _pairwise_preference(votes, candidates)
