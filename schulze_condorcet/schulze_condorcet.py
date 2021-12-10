@@ -137,7 +137,7 @@ def _schulze_evaluate_routine(
 ) -> Tuple[PairwisePreference, LinkStrength, SchulzeResult]:
     """The routine to determine the result of the schulze-condorcet method.
 
-    This is outsourced in a helper function to avoid duplicate code or duplicate
+    This is outsourced into this helper function to avoid duplicate code or duplicate
     calculations inside the schulze_evaluate and schulze_evaluate_detailed functions.
     """
     # First we count the number of votes preferring x to y
