@@ -134,7 +134,7 @@ def _schulze_evaluate_routine(
         votes: Collection[Vote],
         candidates: Sequence[Candidate],
         strength: StrengthCallback
-) -> Tuple[PairwisePreference, LinkStrength, SchulzeResult]:
+) -> Tuple[PairwisePreference, SchulzeResult]:
     """The routine to determine the result of the schulze-condorcet method.
 
     This is outsourced into this helper function to avoid duplicate code or duplicate
@@ -161,7 +161,7 @@ def _schulze_evaluate_routine(
         winners = _schulze_winners(d, remaining)
         result.append(winners)
 
-    return counts, d, result
+    return counts, result
 
 
 def schulze_evaluate(
@@ -200,7 +200,7 @@ def schulze_evaluate(
     # Validate votes and candidate input to be consistent
     _check_consistency(votes, candidates)
 
-    _, _, result = _schulze_evaluate_routine(votes, candidates, strength)
+    _, result = _schulze_evaluate_routine(votes, candidates, strength)
 
     # Construct a vote string reflecting the overall preference
     return _recombine_vote(result)
@@ -220,7 +220,7 @@ def schulze_evaluate_detailed(
     # Validate votes and candidate input to be consistent
     _check_consistency(votes, candidates)
 
-    counts, _, result = _schulze_evaluate_routine(votes, candidates, strength)
+    counts, result = _schulze_evaluate_routine(votes, candidates, strength)
 
     # Construct the DetailedResult. This contains a list of dicts, one for each
     # level of preference, containing the preferred and rejected candidates and the
