@@ -3,9 +3,9 @@ import random
 from typing import Dict, List, Optional, Tuple, TypedDict
 import unittest
 
-from schulze_condorcet import pairwise_preference, schulze_evaluate, schulze_evaluate_detailed, Candidate, Vote
-from schulze_condorcet.schulze_condorcet import DetailedResultLevel as DRL
+from schulze_condorcet import schulze_evaluate, schulze_evaluate_detailed
 from schulze_condorcet.strength import margin, winning_votes
+from schulze_condorcet.types import Candidate, DetailedResultLevel as DRL, Vote
 
 
 class ClassicalTestCase(TypedDict):

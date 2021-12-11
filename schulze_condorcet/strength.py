@@ -9,18 +9,12 @@ oppositions per path in the graph of candidates (for details, see at `schulze_ev
 Now, we use this and the total number of votes to define the strength of a given path
 in the graph of all candidates.
 
-How to asses the strength of a path is one thing not specified by the Schulze method and
-indeed there are several possibilities. We offer some sample implementations of such a
-strength function, together with an protocol defining the interface of a generic
-strength function . You can use it to implement your own strength function.
+How to assess the strength of a path is one thing not specified by the Schulze method
+and indeed there are several possibilities. We offer some sample implementations of such
+a strength function, together with a protocol defining the interface of a generic
+strength function (`StrenghtCallback` in module `schulze_condorcet.types`).
+You can use it to implement your own strength function.
 """
-
-from typing import Protocol
-
-
-class StrengthCallback(Protocol):
-    """The interface every strength function has to implement."""
-    def __call__(self, *, support: int, opposition: int, totalvotes: int) -> int: ...
 
 
 def winning_votes(*, support: int, opposition: int, totalvotes: int) -> int:
