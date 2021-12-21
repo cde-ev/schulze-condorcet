@@ -3,20 +3,20 @@ from typing import (
 )
 
 
-# A single vote, inputted as raw vote string. Consists only of the candidates,
+# A single vote, represented as string. Consists only of the candidates,
 # separated by '>' and '=' to express the preference between the candidates.
-Vote = NewType('Vote', str)
+VoteString = NewType('VoteString', str)
 # A single candidate. Can be any string, expect that it must not contain the special
 # characters '>' and '='.
 Candidate = NewType('Candidate', str)
 # A single vote, split into separate levels accordingly to (descending) preference.
 # All candidates at the same level (in the same inner tuple) have equal preference.
-SplitVote = Sequence[Sequence[Candidate]]
+VoteList = Sequence[Sequence[Candidate]]
 # How many voters prefer the first candidate over the second candidate.
 PairwisePreference = Dict[Tuple[Candidate, Candidate], int]
 # The link strength between two candidates.
 LinkStrength = Dict[Tuple[Candidate, Candidate], int]
-# The result of the schulze_condorcet method. This has the same structure as a SplitVote.
+# The result of the schulze_condorcet method. This has the same structure as a VoteList.
 SchulzeResult = List[List[Candidate]]
 
 
