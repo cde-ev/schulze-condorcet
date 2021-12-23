@@ -1,5 +1,5 @@
 from typing import (
-    Dict, List, NewType, Protocol, Tuple, TypedDict, Sequence
+    Dict, List, NewType, Protocol, Tuple, TypedDict
 )
 
 
@@ -11,7 +11,9 @@ VoteString = NewType('VoteString', str)
 Candidate = NewType('Candidate', str)
 # A single vote, split into separate levels accordingly to (descending) preference.
 # All candidates at the same level (in the same inner tuple) have equal preference.
-VoteList = Sequence[Sequence[Candidate]]
+VoteTuple = Tuple[Tuple[Candidate, ...], ...]
+# We accept VoteLists instead of VoteTuples for convenience.
+VoteList = List[List[Candidate]]
 # How many voters prefer the first candidate over the second candidate.
 PairwisePreference = Dict[Tuple[Candidate, Candidate], int]
 # The link strength between two candidates.
