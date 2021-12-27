@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple, TypedDict
 import unittest
 
 from schulze_condorcet import schulze_evaluate, schulze_evaluate_detailed
+import schulze_condorcet.io as io
 from schulze_condorcet.strength import margin, winning_votes
 from schulze_condorcet.types import Candidate, DetailedResultLevel as DRL, VoteString
 
@@ -516,6 +517,36 @@ class MyTest(unittest.TestCase):
         candidates = (c1, c0, c2)
         condensed = schulze_evaluate(reference_votes, candidates)
         self.assertEqual("1=0>2", condensed)
+
+    def test_io(self) -> None:
+        candidates = ["1", "2", "3"]
+        # This does only static type conversion
+        self.assertEqual(io.as_candidates(candidates), candidates)
+
+        # build the same votes, represented as string, list and tuple
+        vote_str_1 = "1"
+        vote_str_2 = "1=2>3"
+        vote_list_1 = [[Candidate("1")]]
+        vote_list_2 = [[Candidate("1"), Candidate("2")], [Candidate("3")]]
+        vote_tuple_1 = ((Candidate("1"),),)
+        vote_tuple_2 = ((Candidate("1"), Candidate("2")), (Candidate("3"),))
+        vote_str_list = [vote_str_1, vote_str_2]
+        vote_list_list = [vote_list_1, vote_list_2]
+        vote_tuple_list = [vote_tuple_1, vote_tuple_2]
+
+        self.assertEqual(vote_str_list, io.as_vote_strings(vote_str_list))
+        self.assertEqual(vote_str_list, io.as_vote_strings(vote_list_list))
+        self.assertEqual(vote_str_list, io.as_vote_strings(vote_tuple_list))
+
+        # mixing different representations of votes is confusing and therefore not
+        # recommended and forbidden by static type checking.
+        # However, we ensure the outcome is right nonetheless.
+        self.assertEqual(
+            3*vote_str_list,
+            io.as_vote_strings([*vote_str_list, *vote_list_list, *vote_tuple_list])  # type:ignore
+        )
+
+        self.assertEqual(vote_tuple_list, io.as_vote_tuples(vote_str_list))
 
 
 if __name__ == '__main__':
