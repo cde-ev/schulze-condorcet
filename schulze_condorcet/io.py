@@ -21,7 +21,7 @@ def as_candidates(values: Sequence[str]) -> List[Candidate]:
     We respect the order of the candidates, as this is also respected during evaluation
     of the votes using the schulze method.
     """
-    return [Candidate(value) for value in values]
+    return [as_candidate(value) for value in values]
 
 
 def as_vote_string(
