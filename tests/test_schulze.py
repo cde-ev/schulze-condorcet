@@ -534,7 +534,6 @@ class MyTest(unittest.TestCase):
         vote_list_list = [vote_list_1, vote_list_2]
         vote_tuple_list = [vote_tuple_1, vote_tuple_2]
 
-        self.assertEqual(vote_str_list, io.as_vote_strings(vote_str_list))
         self.assertEqual(vote_str_list, io.as_vote_strings(vote_list_list))
         self.assertEqual(vote_str_list, io.as_vote_strings(vote_tuple_list))
 
@@ -542,8 +541,8 @@ class MyTest(unittest.TestCase):
         # recommended and forbidden by static type checking.
         # However, we ensure the outcome is right nonetheless.
         self.assertEqual(
-            3*vote_str_list,
-            io.as_vote_strings([*vote_str_list, *vote_list_list, *vote_tuple_list])  # type:ignore
+            2*vote_str_list,
+            io.as_vote_strings([*vote_list_list, *vote_tuple_list])  # type:ignore
         )
 
         self.assertEqual(vote_tuple_list, io.as_vote_tuples(vote_str_list))

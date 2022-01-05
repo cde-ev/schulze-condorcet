@@ -25,22 +25,17 @@ def as_candidates(values: Sequence[str]) -> List[Candidate]:
 
 
 def as_vote_string(
-        value: Union[str, VoteList, VoteTuple]
+        value: Union[VoteList, VoteTuple]
 ) -> VoteString:
-    """Convert a level-based representation of the vote into its string representation.
-
-    This also accepts a string which will be marked as vote for convenience.
-    """
-    if isinstance(value, str):
-        return VoteString(value)
-    elif isinstance(value, (list, tuple)):
+    """Convert a level-based representation of the vote into its string representation."""
+    if isinstance(value, (list, tuple)):
         return VoteString(">".join("=".join(level) for level in value))
     else:
         raise NotImplementedError(value)
 
 
 def as_vote_strings(
-        values: Union[Collection[str], Collection[VoteList], Collection[VoteTuple]]
+        values: Union[Collection[VoteList], Collection[VoteTuple]]
 ) -> List[VoteString]:
     """Convert each value into a string representation of the vote."""
     return [as_vote_string(value) for value in values]
