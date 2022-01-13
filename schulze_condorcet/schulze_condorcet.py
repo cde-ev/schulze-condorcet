@@ -4,7 +4,7 @@ from typing import (
     Collection, Container, List, Mapping, Tuple, Sequence
 )
 
-from schulze_condorcet.io import as_vote_string, as_vote_tuples
+from schulze_condorcet.util import as_vote_string, as_vote_tuples
 from schulze_condorcet.strength import winning_votes
 from schulze_condorcet.types import (
     Candidate, DetailedResultLevel, LinkStrength, PairwisePreference, SchulzeResult,
