@@ -4,10 +4,11 @@ from typing import (
     Collection, Container, List, Mapping, Tuple, Sequence
 )
 
+from schulze_condorcet.util import as_vote_string, as_vote_tuples
 from schulze_condorcet.strength import winning_votes
 from schulze_condorcet.types import (
     Candidate, DetailedResultLevel, LinkStrength, PairwisePreference, SchulzeResult,
-    VoteList, StrengthCallback, VoteString
+    StrengthCallback, VoteString
 )
 
 
@@ -43,27 +44,6 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
     return winners
 
 
-def _split_vote(vote: VoteString) -> VoteList:
-    """Split a vote string into its candidates."""
-    return (
-        tuple(
-            tuple(
-                Candidate(candidate) for candidate in level.split('=')
-            ) for level in vote.split('>')
-        )
-    )
-
-
-def _split_votes(votes: Collection[VoteString]) -> List[VoteList]:
-    """Split a list of vote strings into their candidates."""
-    return [_split_vote(vote) for vote in votes]
-
-
-def _recombine_vote(vote: VoteList) -> VoteString:
-    """Construct a vote string from its candidates, opposite of _split_vote."""
-    return VoteString(">".join("=".join(level) for level in vote))
-
-
 def _check_consistency(votes: Collection[VoteString], candidates: Sequence[Candidate]) -> None:
     """Check that the given vote strings are consistent with the provided candidates.
 
@@ -73,7 +53,7 @@ def _check_consistency(votes: Collection[VoteString], candidates: Sequence[Candi
     if any(">" in candidate or "=" in candidate for candidate in candidates):
         raise ValueError(_("A candidate contains a forbidden character."))
     candidates_set = set(candidates)
-    for vote in _split_votes(votes):
+    for vote in as_vote_tuples(votes):
         vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
         vote_candidates_set = set(vote_candidates)
         if candidates_set != vote_candidates_set:
@@ -102,7 +82,7 @@ def _pairwise_preference(
 ) -> PairwisePreference:
     """Calculate the pairwise preference of all candidates from all given votes."""
     counts = {(x, y): 0 for x in candidates for y in candidates}
-    for vote in _split_votes(votes):
+    for vote in as_vote_tuples(votes):
         for x in candidates:
             for y in candidates:
                 if _subindex(vote, x) < _subindex(vote, y):
@@ -183,7 +163,7 @@ def schulze_evaluate(
     _, result = _schulze_evaluate_routine(votes, candidates, strength)
 
     # Construct a vote string reflecting the overall preference
-    return _recombine_vote(result)
+    return as_vote_string(result)
 
 
 def schulze_evaluate_detailed(
