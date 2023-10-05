@@ -1,10 +1,11 @@
-import itertools
 from gettext import gettext as _
 from typing import (
     Collection, Container, List, Mapping, Tuple, Sequence
 )
 
-from schulze_condorcet.util import as_vote_string, as_vote_tuples
+from schulze_condorcet.util import (
+    as_vote_string, as_vote_tuples, validate_candidates, validate_votes
+)
 from schulze_condorcet.strength import winning_votes
 from schulze_condorcet.types import (
     Candidate, DetailedResultLevel, LinkStrength, PairwisePreference, SchulzeResult,
@@ -42,27 +43,6 @@ def _schulze_winners(d: Mapping[Tuple[Candidate, Candidate], int],
         if all(p[(i, j)] >= p[(j, i)] for j in candidates):
             winners.append(i)
     return winners
-
-
-def _check_consistency(votes: Collection[VoteString], candidates: Sequence[Candidate]) -> None:
-    """Check that the given vote strings are consistent with the provided candidates.
-
-    This means, each vote string contains exactly the given candidates, separated by
-    '>' and '=', and each candidate occurs in each vote string exactly once.
-    """
-    if any(">" in candidate or "=" in candidate for candidate in candidates):
-        raise ValueError(_("A candidate contains a forbidden character."))
-    candidates_set = set(candidates)
-    for vote in as_vote_tuples(votes):
-        vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
-        vote_candidates_set = set(vote_candidates)
-        if candidates_set != vote_candidates_set:
-            if candidates_set < vote_candidates_set:
-                raise ValueError(_("Superfluous candidate in vote string."))
-            else:
-                raise ValueError(_("Missing candidate in vote string."))
-        if not len(vote_candidates) == len(vote_candidates_set):
-            raise ValueError(_("Every candidate must occur exactly once in each vote."))
 
 
 def _subindex(alist: Collection[Container[str]], element: str) -> int:
@@ -125,8 +105,8 @@ def _schulze_evaluate_routine(
 
 
 def schulze_evaluate(
-        votes: Collection[VoteString],
-        candidates: Sequence[Candidate],
+        votes: Collection[str],
+        candidates: Sequence[str],
         strength: StrengthCallback = winning_votes
 ) -> VoteString:
     """Use the Schulze method to cumulate preference lists (votes) into one list (vote).
@@ -158,7 +138,8 @@ def schulze_evaluate(
     :returns: A vote string, reflecting the overall preference.
     """
     # Validate votes and candidate input to be consistent
-    _check_consistency(votes, candidates)
+    candidates = validate_candidates(candidates)
+    votes = validate_votes(votes, candidates)
 
     _, result = _schulze_evaluate_routine(votes, candidates, strength)
 
@@ -167,8 +148,8 @@ def schulze_evaluate(
 
 
 def schulze_evaluate_detailed(
-        votes: Collection[VoteString],
-        candidates: Sequence[Candidate],
+        votes: Collection[str],
+        candidates: Sequence[str],
         strength: StrengthCallback = winning_votes
 ) -> List[DetailedResultLevel]:
     """Construct a more detailed representation of the result by adding some stats.
@@ -178,7 +159,8 @@ def schulze_evaluate_detailed(
     of preference in the overall result.
     """
     # Validate votes and candidate input to be consistent
-    _check_consistency(votes, candidates)
+    candidates = validate_candidates(candidates)
+    votes = validate_votes(votes, candidates)
 
     counts, result = _schulze_evaluate_routine(votes, candidates, strength)
 
@@ -206,8 +188,8 @@ def schulze_evaluate_detailed(
 
 
 def pairwise_preference(
-        votes: Collection[VoteString],
-        candidates: Sequence[Candidate],
+        votes: Collection[str],
+        candidates: Sequence[str],
 ) -> PairwisePreference:
     """Calculate the pairwise preference of all candidates from all given votes.
 
@@ -216,6 +198,7 @@ def pairwise_preference(
     other.
     """
     # Validate votes and candidate input to be consistent
-    _check_consistency(votes, candidates)
+    candidates = validate_candidates(candidates)
+    votes = validate_votes(votes, candidates)
 
     return _pairwise_preference(votes, candidates)

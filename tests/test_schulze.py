@@ -521,7 +521,7 @@ class MyTest(unittest.TestCase):
     def test_util(self) -> None:
         candidates = ["1", "2", "3"]
         # This does only static type conversion
-        self.assertEqual(util.as_candidates(candidates), candidates)
+        self.assertEqual(util.validate_candidates(candidates), candidates)
 
         # build the same votes, represented as string, list and tuple
         vote_str_1 = "1"
