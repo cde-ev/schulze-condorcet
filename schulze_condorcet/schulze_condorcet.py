@@ -3,7 +3,9 @@ from typing import (
     Collection, Container, List, Mapping, Tuple, Sequence
 )
 
-from schulze_condorcet.util import as_vote_string, as_vote_tuples, validate_votes
+from schulze_condorcet.util import (
+    as_vote_string, as_vote_tuples, validate_candidates, validate_votes
+)
 from schulze_condorcet.strength import winning_votes
 from schulze_condorcet.types import (
     Candidate, DetailedResultLevel, LinkStrength, PairwisePreference, SchulzeResult,
@@ -103,8 +105,8 @@ def _schulze_evaluate_routine(
 
 
 def schulze_evaluate(
-        votes: Collection[VoteString],
-        candidates: Sequence[Candidate],
+        votes: Collection[str],
+        candidates: Sequence[str],
         strength: StrengthCallback = winning_votes
 ) -> VoteString:
     """Use the Schulze method to cumulate preference lists (votes) into one list (vote).
@@ -136,7 +138,8 @@ def schulze_evaluate(
     :returns: A vote string, reflecting the overall preference.
     """
     # Validate votes and candidate input to be consistent
-    validate_votes(votes, candidates)
+    candidates = validate_candidates(candidates)
+    votes = validate_votes(votes, candidates)
 
     _, result = _schulze_evaluate_routine(votes, candidates, strength)
 
@@ -145,8 +148,8 @@ def schulze_evaluate(
 
 
 def schulze_evaluate_detailed(
-        votes: Collection[VoteString],
-        candidates: Sequence[Candidate],
+        votes: Collection[str],
+        candidates: Sequence[str],
         strength: StrengthCallback = winning_votes
 ) -> List[DetailedResultLevel]:
     """Construct a more detailed representation of the result by adding some stats.
@@ -156,7 +159,8 @@ def schulze_evaluate_detailed(
     of preference in the overall result.
     """
     # Validate votes and candidate input to be consistent
-    validate_votes(votes, candidates)
+    candidates = validate_candidates(candidates)
+    votes = validate_votes(votes, candidates)
 
     counts, result = _schulze_evaluate_routine(votes, candidates, strength)
 
@@ -184,8 +188,8 @@ def schulze_evaluate_detailed(
 
 
 def pairwise_preference(
-        votes: Collection[VoteString],
-        candidates: Sequence[Candidate],
+        votes: Collection[str],
+        candidates: Sequence[str],
 ) -> PairwisePreference:
     """Calculate the pairwise preference of all candidates from all given votes.
 
@@ -194,6 +198,7 @@ def pairwise_preference(
     other.
     """
     # Validate votes and candidate input to be consistent
-    validate_votes(votes, candidates)
+    candidates = validate_candidates(candidates)
+    votes = validate_votes(votes, candidates)
 
     return _pairwise_preference(votes, candidates)
