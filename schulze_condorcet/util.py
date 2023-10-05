@@ -12,28 +12,24 @@ from typing import Collection, List, Sequence, Union
 from schulze_condorcet.types import Candidate, VoteList, VoteString, VoteTuple
 
 
-def as_candidate(value: str) -> Candidate:
-    """Mark a string as candidate."""
-    return Candidate(value)
-
-
-def as_candidates(values: Sequence[str]) -> List[Candidate]:
-    """Mark a row of strings as candidates.
+def validate_candidates(candidates: Sequence[str]) -> Sequence[Candidate]:
+    """Validate a sequence of candidates.
 
     We respect the order of the candidates, as this is also respected during evaluation
-    of the votes using the schulze method.
-    """
-    return [as_candidate(value) for value in values]
+    of the votes using the schulze method."""
+
+    if any(">" in candidate or "=" in candidate for candidate in candidates):
+        raise ValueError(_("A candidate contains a forbidden character."))
+    return [Candidate(candidate) for candidate in candidates]
 
 
-def validate_votes(votes: Collection[VoteString], candidates: Sequence[Candidate]) -> None:
+def validate_votes(votes: Collection[str], candidates: Sequence[str]) -> Collection[VoteString]:
     """Check that the given vote strings are consistent with the provided candidates.
 
     This means, each vote string contains exactly the given candidates, separated by
     '>' and '=', and each candidate occurs in each vote string exactly once.
     """
-    if any(">" in candidate or "=" in candidate for candidate in candidates):
-        raise ValueError(_("A candidate contains a forbidden character."))
+    candidates = validate_candidates(candidates)
     candidates_set = set(candidates)
     for vote in as_vote_tuples(votes):
         vote_candidates = [c for c in itertools.chain.from_iterable(vote)]
@@ -45,6 +41,7 @@ def validate_votes(votes: Collection[VoteString], candidates: Sequence[Candidate
                 raise ValueError(_("Missing candidate in vote string."))
         if not len(vote_candidates) == len(vote_candidates_set):
             raise ValueError(_("Every candidate must occur exactly once in each vote."))
+    return [VoteString(vote) for vote in votes]
 
 
 def as_vote_string(
